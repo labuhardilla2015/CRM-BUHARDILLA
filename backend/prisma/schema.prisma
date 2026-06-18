@@ -1,0 +1,61 @@
+// Schema Prisma — CRM La Buhardilla del Marketing
+// Fase 1: autenticación y roles. Los módulos siguientes (clientes, reloj,
+// potenciales, etc.) añadirán sus modelos en migraciones posteriores.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Rol {
+  ADMIN
+  TRABAJADOR
+}
+
+/// Usuarios del CRM. El rol se asigna en el registro según la tabla RoleEmail.
+model Usuario {
+  id           String   @id @default(uuid())
+  nombre       String   @db.VarChar(120)
+  email        String   @unique @db.VarChar(180)
+  passwordHash String   @map("password_hash") @db.VarChar(255)
+  rol          Rol      @default(TRABAJADOR)
+  activo       Boolean  @default(true)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  refreshTokens RefreshToken[]
+
+  @@map("usuarios")
+}
+
+/// Lista editable por un admin que determina qué correos/dominios son ADMIN.
+/// `patron` puede ser un email completo ("ana@ejemplo.com") o un dominio ("@ejemplo.com").
+model RoleEmail {
+  id        String   @id @default(uuid())
+  patron    String   @unique @db.VarChar(180)
+  rol       Rol      @default(ADMIN)
+  activo    Boolean  @default(true)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("role_emails")
+}
+
+/// Refresh tokens rotatorios. Se guarda solo el hash del token; al rotar se
+/// revoca el anterior. Permite logout y detección de reutilización.
+model RefreshToken {
+  id        String   @id @default(uuid())
+  usuarioId String   @map("usuario_id")
+  tokenHash String   @unique @map("token_hash") @db.VarChar(255)
+  expiresAt DateTime @map("expires_at")
+  revokedAt DateTime? @map("revoked_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@index([usuarioId])
+  @@map("refresh_tokens")
+}
