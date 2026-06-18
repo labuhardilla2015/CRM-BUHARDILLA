@@ -5,6 +5,7 @@ import { validateEnv } from './config/env.validation';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
+import { ClockModule } from './modules/clock/clock.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
 import { AppController } from './app.controller';
@@ -18,6 +19,7 @@ import { AppController } from './app.controller';
     PrismaModule,
     UsersModule,
     AuthModule,
+    ClockModule,
   ],
   controllers: [AppController],
   providers: [

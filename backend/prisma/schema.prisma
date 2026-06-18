@@ -27,7 +27,9 @@ model Usuario {
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
-  refreshTokens RefreshToken[]
+  refreshTokens    RefreshToken[]
+  fichajes         Fichaje[]      @relation("FichajesPropios")
+  fichajesEditados Fichaje[]      @relation("FichajesEditados")
 
   @@map("usuarios")
 }
@@ -58,4 +60,23 @@ model RefreshToken {
 
   @@index([usuarioId])
   @@map("refresh_tokens")
+}
+
+/// Fichaje de jornada (entrada/salida). El trabajador NO puede modificar las
+/// marcas una vez creadas; solo un ADMIN puede editar inicio/fin (queda
+/// registrado quién y cuándo lo editó).
+model Fichaje {
+  id        String    @id @default(uuid())
+  usuarioId String    @map("usuario_id")
+  inicio    DateTime
+  fin       DateTime?
+  editadoPorId String? @map("editado_por_id")
+  editadoAt    DateTime? @map("editado_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  usuario    Usuario  @relation("FichajesPropios", fields: [usuarioId], references: [id], onDelete: Cascade)
+  editadoPor Usuario? @relation("FichajesEditados", fields: [editadoPorId], references: [id], onDelete: SetNull)
+
+  @@index([usuarioId, inicio])
+  @@map("fichajes")
 }

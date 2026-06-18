@@ -7,6 +7,7 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { Login } from '@/pages/Login';
 import { Register } from '@/pages/Register';
 import { Inicio } from '@/pages/Inicio';
+import { Fichaje } from '@/pages/reloj/Fichaje';
 import { ComingSoon } from '@/components/PageHeader';
 
 export default function App() {
@@ -31,10 +32,7 @@ export default function App() {
 
             {/* Reloj (Fase 2) */}
             <Route path="/reloj" element={<Navigate to="/reloj/fichaje" replace />} />
-            <Route
-              path="/reloj/fichaje"
-              element={<ComingSoon title="Fichaje de jornada" fase="Fase 2" desc="Marca de entrada y salida de la jornada." />}
-            />
+            <Route path="/reloj/fichaje" element={<Fichaje />} />
             <Route
               path="/reloj/cronometro"
               element={<ComingSoon title="Cronómetro de tareas" fase="Fase 2" desc="Mide el tiempo por cliente y acción (estilo Toggl)." />}
