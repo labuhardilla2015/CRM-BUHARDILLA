@@ -3,9 +3,11 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { useAuth } from '@/store/auth';
 import { restoreSession } from '@/lib/api';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
+import { AppLayout } from '@/components/layout/AppLayout';
 import { Login } from '@/pages/Login';
 import { Register } from '@/pages/Register';
-import { Dashboard } from '@/pages/Dashboard';
+import { Inicio } from '@/pages/Inicio';
+import { ComingSoon } from '@/components/PageHeader';
 
 export default function App() {
   const setCargando = useAuth((s) => s.setCargando);
@@ -18,11 +20,44 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
+        {/* Públicas */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
 
+        {/* Privadas dentro del layout con menú lateral */}
         <Route element={<ProtectedRoute />}>
-          <Route path="/" element={<Dashboard />} />
+          <Route element={<AppLayout />}>
+            <Route path="/" element={<Inicio />} />
+
+            {/* Reloj (Fase 2) */}
+            <Route path="/reloj" element={<Navigate to="/reloj/fichaje" replace />} />
+            <Route
+              path="/reloj/fichaje"
+              element={<ComingSoon title="Fichaje de jornada" fase="Fase 2" desc="Marca de entrada y salida de la jornada." />}
+            />
+            <Route
+              path="/reloj/cronometro"
+              element={<ComingSoon title="Cronómetro de tareas" fase="Fase 2" desc="Mide el tiempo por cliente y acción (estilo Toggl)." />}
+            />
+            <Route
+              path="/reloj/informes"
+              element={<ComingSoon title="Informes de tiempo" fase="Fase 2" desc="Filtra por persona, cliente y acción." />}
+            />
+
+            {/* Clientes (Fase 3) */}
+            <Route
+              path="/clientes"
+              element={<ComingSoon title="Clientes" fase="Fase 3" desc="Tableros tipo Trello, fichas y hoja de claves." />}
+            />
+
+            {/* Potenciales (Fase 4, solo admin) */}
+            <Route element={<ProtectedRoute roles={['ADMIN']} />}>
+              <Route
+                path="/potenciales"
+                element={<ComingSoon title="Potenciales" fase="Fase 4" desc="Embudo de clientes potenciales y presupuestos." />}
+              />
+            </Route>
+          </Route>
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />
