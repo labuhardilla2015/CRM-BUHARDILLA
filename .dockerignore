@@ -1,0 +1,12 @@
+node_modules
+**/node_modules
+**/dist
+backend/storage/*
+!backend/storage/.gitkeep
+docker/data
+.git
+.github
+**/*.log
+**/.env
+!**/.env.example
+frontend/.vite

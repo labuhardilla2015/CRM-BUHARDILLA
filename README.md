@@ -107,6 +107,31 @@ El rol se asigna **según el email** consultando la tabla `role_emails`:
 
 ---
 
+## Despliegue en producción (Docker)
+
+Todo se levanta con un único `docker compose` (MySQL + API + frontend nginx).
+El frontend hace de **proxy** a la API y al WebSocket, así que **todo va por el
+mismo origen** (sin CORS y con cookies seguras).
+
+```bash
+# 1. Configura las variables y los secretos
+cp .env.prod.example .env.prod
+#    edita .env.prod (genera secretos: openssl rand -base64 48 / openssl rand -hex 32)
+
+# 2. Construye y levanta
+docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build
+```
+
+- App disponible en `http://localhost:8080` (o el `WEB_PORT` que definas).
+- El contenedor del backend aplica migraciones (`prisma migrate deploy`) y siembra
+  el admin automáticamente al arrancar.
+- Los archivos subidos persisten en el volumen `storage_data`; la BD en `mysql_data`.
+
+> Para un dominio real, pon un proxy inverso (Caddy/Traefik/Nginx) con HTTPS
+> delante del servicio `frontend` y ajusta `FRONTEND_URL`.
+
+---
+
 ## Roadmap por fases
 
 | Fase | Módulo                         | Estado        |
