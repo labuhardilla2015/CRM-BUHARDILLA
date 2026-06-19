@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Play, Square, Plus, Trash2, Pencil, Check, X } from 'lucide-react';
+import { Play, Square, Plus, Trash2, Pencil, Check, X, AlertTriangle } from 'lucide-react';
 import {
   ACCIONES,
   ACCION_LABEL,
@@ -13,7 +13,7 @@ import {
   type AccionTiempo,
   type RegistroTiempo,
 } from '@/lib/registros-api';
-import { getClientes, crearCliente } from '@/lib/clientes-api';
+import { getClientes, crearCliente, getLimites } from '@/lib/clientes-api';
 import { errorMessage } from '@/lib/auth-api';
 import {
   duracionSeg,
@@ -129,6 +129,9 @@ export function Cronometro() {
         )}
         {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
       </div>
+
+      {/* Aviso de límites de horas superados del cliente */}
+      <AvisoLimites clienteId={activo?.clienteId ?? clienteId} />
 
       {/* Añadir cliente */}
       <AnadirCliente
@@ -292,6 +295,30 @@ function RegistroRow({
         <button onClick={() => borrar.mutate()} className="text-slate-400 hover:text-red-600" title="Eliminar">
           <Trash2 className="h-4 w-4" />
         </button>
+      </div>
+    </div>
+  );
+}
+
+function AvisoLimites({ clienteId }: { clienteId: string }) {
+  const limites = useQuery({
+    queryKey: ['limites', clienteId],
+    queryFn: () => getLimites(clienteId),
+    enabled: !!clienteId,
+  });
+  const excedidos = (limites.data ?? []).filter((l) => l.excedido);
+  if (excedidos.length === 0) return null;
+
+  return (
+    <div className="mt-3 flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+      <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+      <div>
+        <p className="font-medium">Límite de horas mensual superado en este cliente:</p>
+        <ul className="mt-1 list-inside list-disc">
+          {excedidos.map((l) => (
+            <li key={l.accion}>{ACCION_LABEL[l.accion]}: {l.horasUsadas}h de {l.horas}h</li>
+          ))}
+        </ul>
       </div>
     </div>
   );

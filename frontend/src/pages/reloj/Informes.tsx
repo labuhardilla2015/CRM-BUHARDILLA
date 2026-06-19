@@ -1,13 +1,14 @@
 import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Clock3, FileBarChart, Users2, Briefcase } from 'lucide-react';
+import { Clock3, FileBarChart, Users2, Briefcase, AlertTriangle } from 'lucide-react';
 import {
   getResumen,
   getUsuarios,
   type FiltrosInforme,
   type ItemAgrupado,
 } from '@/lib/informes-api';
-import { getClientes } from '@/lib/clientes-api';
+import { getClientes, getLimites } from '@/lib/clientes-api';
+import { ACCION_LABEL } from '@/lib/registros-api';
 import { ACCIONES, type AccionTiempo } from '@/lib/registros-api';
 import { formatHoras, inicioHoy, inicioSemana, sumarDias } from '@/lib/tiempo';
 import { useAuth } from '@/store/auth';
@@ -61,6 +62,14 @@ export function Informes() {
     queryFn: () => getResumen(filtros),
   });
 
+  // Límites del cliente seleccionado (para avisar de los superados)
+  const limites = useQuery({
+    queryKey: ['limites', clienteId],
+    queryFn: () => getLimites(clienteId),
+    enabled: !!clienteId,
+  });
+  const excedidos = (limites.data ?? []).filter((l) => l.excedido);
+
   const total = resumen.data?.totalSegundos ?? 0;
 
   return (
@@ -108,6 +117,21 @@ export function Informes() {
           </Select>
         </div>
       </div>
+
+      {/* Aviso de límites superados (cuando se filtra por cliente) */}
+      {excedidos.length > 0 && (
+        <div className="mb-6 flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+          <div>
+            <p className="font-medium">Límite mensual superado:</p>
+            <ul className="mt-1 list-inside list-disc">
+              {excedidos.map((l) => (
+                <li key={l.accion}>{ACCION_LABEL[l.accion]}: {l.horasUsadas}h de {l.horas}h</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      )}
 
       {/* Total */}
       <div className="mb-8 flex items-center gap-4 rounded-xl bg-white p-5 shadow-sm ring-1 ring-slate-200">

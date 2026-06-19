@@ -5,8 +5,9 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Prisma, RegistroTiempo, Rol } from '@prisma/client';
+import { AccionTiempo, Prisma, RegistroTiempo, Rol, TipoNotificacion } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import {
   ActualizarRegistroDto,
   CrearRegistroDto,
@@ -18,9 +19,18 @@ const incluirCliente = {
   cliente: { select: { id: true, nombre: true } },
 } satisfies Prisma.RegistroTiempoInclude;
 
+const ACCION_LABEL: Record<AccionTiempo, string> = {
+  SEO: 'SEO', WEB: 'Web', RRSS: 'RRSS', DISENO: 'Diseño', INFORMES: 'Informes',
+  SEO_LOCAL: 'SEO Local', ADS: 'Ads', ADMINISTRACION: 'Administración',
+  ESTRATEGIA: 'Estrategia', EMAIL_MARKETING: 'Email Marketing',
+};
+
 @Injectable()
 export class RegistrosService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private notifications: NotificationsService,
+  ) {}
 
   /** Registro en marcha (sin fin) del usuario, si existe. */
   corriendo(usuarioId: string) {
@@ -56,21 +66,23 @@ export class RegistrosService {
       orderBy: { inicio: 'desc' },
     });
     if (!enMarcha) throw new ConflictException('No tienes ningún cronómetro en marcha');
-    return this.prisma.registroTiempo.update({
+    const reg = await this.prisma.registroTiempo.update({
       where: { id: enMarcha.id },
       data: { fin: new Date() },
       include: incluirCliente,
     });
+    await this.avisarSiExcede(reg);
+    return reg;
   }
 
   /** Crea un registro manual con inicio y fin (p. ej. desde el calendario). */
-  crearManual(usuarioId: string, dto: CrearRegistroDto): Promise<RegistroTiempo> {
+  async crearManual(usuarioId: string, dto: CrearRegistroDto): Promise<RegistroTiempo> {
     const inicio = new Date(dto.inicio);
     const fin = new Date(dto.fin);
     if (fin <= inicio) {
       throw new BadRequestException('La hora de fin debe ser posterior a la de inicio');
     }
-    return this.prisma.registroTiempo.create({
+    const reg = await this.prisma.registroTiempo.create({
       data: {
         usuarioId,
         clienteId: dto.clienteId,
@@ -81,6 +93,8 @@ export class RegistrosService {
       },
       include: incluirCliente,
     });
+    await this.avisarSiExcede(reg);
+    return reg;
   }
 
   /** Listado por rango. Trabajador ve lo suyo; admin puede filtrar por usuario. */
@@ -140,6 +154,48 @@ export class RegistrosService {
   async eliminar(id: string, solicitante: { id: string; rol: Rol }): Promise<void> {
     await this.exigirAcceso(id, solicitante);
     await this.prisma.registroTiempo.delete({ where: { id } });
+  }
+
+  /**
+   * Avisa a los admins si este registro hace que el cliente supere el límite
+   * mensual de la acción (solo cuando se cruza el límite, para no repetir).
+   */
+  private async avisarSiExcede(reg: { clienteId: string; accion: AccionTiempo; inicio: Date; fin: Date | null }) {
+    if (!reg.fin) return;
+    const limite = await this.prisma.limiteCliente.findUnique({
+      where: { clienteId_accion: { clienteId: reg.clienteId, accion: reg.accion } },
+    });
+    if (!limite) return;
+
+    const ahora = new Date();
+    const inicioMes = new Date(ahora.getFullYear(), ahora.getMonth(), 1);
+    const finMes = new Date(ahora.getFullYear(), ahora.getMonth() + 1, 1);
+    const registros = await this.prisma.registroTiempo.findMany({
+      where: { clienteId: reg.clienteId, accion: reg.accion, fin: { not: null }, inicio: { gte: inicioMes, lt: finMes } },
+      select: { inicio: true, fin: true },
+    });
+
+    const totalSeg = registros.reduce((a, r) => a + (r.fin!.getTime() - r.inicio.getTime()) / 1000, 0);
+    const horasAhora = totalSeg / 3600;
+    const horasReg = (reg.fin.getTime() - reg.inicio.getTime()) / 1000 / 3600;
+    const horasAntes = horasAhora - horasReg;
+
+    if (horasAhora > limite.horas && horasAntes <= limite.horas) {
+      const cliente = await this.prisma.cliente.findUnique({ where: { id: reg.clienteId }, select: { nombre: true } });
+      const admins = await this.prisma.usuario.findMany({ where: { rol: Rol.ADMIN, activo: true }, select: { id: true } });
+      const mensaje = `"${cliente?.nombre ?? 'Cliente'}" ha superado el límite mensual de ${ACCION_LABEL[reg.accion]} (${limite.horas}h)`;
+      await Promise.all(
+        admins.map((a) =>
+          this.notifications.crear({
+            usuarioId: a.id,
+            tipo: TipoNotificacion.LIMITE_HORAS,
+            mensaje,
+            entidadTipo: 'cliente',
+            entidadId: reg.clienteId,
+          }),
+        ),
+      );
+    }
   }
 
   // ─── Helpers ───────────────────────────────────────────────────────

@@ -1,4 +1,5 @@
 import { api } from './api';
+import type { AccionTiempo } from './registros-api';
 
 export interface Cliente {
   id: string;
@@ -166,4 +167,21 @@ export async function crearEnlace(
 
 export async function eliminarEnlace(enlaceId: string): Promise<void> {
   await api.delete(`/enlaces-cliente/${enlaceId}`);
+}
+
+// ─── Límites de horas mensuales por acción ───────────────────────────
+export interface LimiteUso {
+  accion: AccionTiempo;
+  horas: number;
+  horasUsadas: number;
+  excedido: boolean;
+}
+
+export async function getLimites(id: string): Promise<LimiteUso[]> {
+  const { data } = await api.get<LimiteUso[]>(`/clientes/${id}/limites`);
+  return data;
+}
+
+export async function setLimite(id: string, accion: AccionTiempo, horas: number): Promise<void> {
+  await api.put(`/clientes/${id}/limites/${accion}`, { horas });
 }

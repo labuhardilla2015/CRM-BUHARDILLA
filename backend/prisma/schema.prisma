@@ -75,6 +75,7 @@ enum TipoNotificacion {
   TARJETA_ASIGNADA
   POTENCIAL
   REUNION
+  LIMITE_HORAS
 }
 
 /// Usuarios del CRM. El rol se asigna en el registro según la tabla RoleEmail.
@@ -166,8 +167,25 @@ model Cliente {
   presupuestos    Presupuesto[]
   documentos      DocumentoCliente[]
   enlaces         EnlaceCliente[]
+  limites         LimiteCliente[]
 
   @@map("clientes")
+}
+
+/// Límite de horas mensuales que se deben dedicar a un cliente por acción
+/// (p. ej. SEO: 4h/mes). Solo avisa cuando se supera, no bloquea.
+model LimiteCliente {
+  id        String       @id @default(uuid())
+  clienteId String       @map("cliente_id")
+  accion    AccionTiempo
+  horas     Float
+  createdAt DateTime     @default(now()) @map("created_at")
+  updatedAt DateTime     @updatedAt @map("updated_at")
+
+  cliente Cliente @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+
+  @@unique([clienteId, accion])
+  @@map("limites_cliente")
 }
 
 /// Documento adjunto a la ficha del cliente (cualquier empleado).

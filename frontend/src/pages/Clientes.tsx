@@ -15,6 +15,7 @@ import { ControlPanel } from '@/components/clientes/ControlPanel';
 import { BoardPanel } from '@/components/clientes/BoardPanel';
 import { GlobalTasks } from '@/components/clientes/GlobalTasks';
 import { EnlacesCliente, DocumentosCliente } from '@/components/clientes/ClienteRecursos';
+import { LimitesCard } from '@/components/clientes/LimitesCard';
 import { Link } from 'react-router-dom';
 import { Button, Input, Select } from '@/components/ui';
 
@@ -129,7 +130,8 @@ function FichaCliente({ clienteId, esAdmin }: { clienteId: string; esAdmin: bool
       <EnlacesCliente clienteId={clienteId} />
       <DocumentosCliente clienteId={clienteId} />
 
-      {/* Control (datos sensibles, solo admin) */}
+      {/* Control y límites de horas (solo admin) */}
+      {esAdmin && <LimitesCard clienteId={clienteId} />}
       {esAdmin && <ControlPanel clienteId={clienteId} />}
 
       {/* Vista global de tareas en curso */}
