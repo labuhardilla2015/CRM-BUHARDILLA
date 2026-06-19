@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -9,12 +10,19 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
+  Res,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { Response } from 'express';
 import { Rol } from '@prisma/client';
 import { PresupuestosService } from './presupuestos.service';
 import { ActualizarPresupuestoDto, CrearPresupuestoDto } from './dto/presupuesto.dto';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { Public } from '../../common/decorators/public.decorator';
+
+const MAX_PDF = 20 * 1024 * 1024;
 
 /** Gestión de presupuestos (solo administradores). */
 @Roles(Rol.ADMIN)
@@ -48,6 +56,20 @@ export class PresupuestosController {
   eliminar(@Param('id', ParseUUIDPipe) id: string) {
     return this.presupuestos.eliminar(id);
   }
+
+  /** Adjunta el PDF del presupuesto. */
+  @Post('presupuestos/:id/pdf')
+  @UseInterceptors(FileInterceptor('file', { limits: { fileSize: MAX_PDF } }))
+  subirPdf(@Param('id', ParseUUIDPipe) id: string, @UploadedFile() file: Express.Multer.File) {
+    if (!file) throw new BadRequestException('Falta el archivo');
+    return this.presupuestos.subirPdf(id, file);
+  }
+
+  @Get('presupuestos/:id/pdf/download')
+  async descargarPdf(@Param('id', ParseUUIDPipe) id: string, @Res() res: Response) {
+    const f = await this.presupuestos.pdfParaDescarga(id);
+    res.download(f.absPath, f.nombre);
+  }
 }
 
 /** Endpoints públicos de aceptación (sin login, por token). */
@@ -73,5 +95,13 @@ export class PresupuestosPublicoController {
   @Post(':token/rechazar')
   rechazar(@Param('token') token: string) {
     return this.presupuestos.rechazar(token);
+  }
+
+  /** Descarga del PDF del presupuesto (sin login, por token). */
+  @Public()
+  @Get(':token/pdf')
+  async pdf(@Param('token') token: string, @Res() res: Response) {
+    const f = await this.presupuestos.pdfPublicoPorToken(token);
+    res.download(f.absPath, f.nombre);
   }
 }

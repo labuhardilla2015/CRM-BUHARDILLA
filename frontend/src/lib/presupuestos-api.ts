@@ -16,6 +16,7 @@ export interface Presupuesto {
   detalle: string | null;
   monto: string; // Decimal serializado
   estado: EstadoPresupuesto;
+  archivoNombre: string | null;
   tokenAceptacion: string | null;
   aceptadoAt: string | null;
   createdAt: string;
@@ -50,6 +51,23 @@ export async function eliminarPresupuesto(id: string): Promise<void> {
   await api.delete(`/presupuestos/${id}`);
 }
 
+export async function subirPdfPresupuesto(id: string, file: File): Promise<Presupuesto> {
+  const form = new FormData();
+  form.append('file', file);
+  const { data } = await api.post<Presupuesto>(`/presupuestos/${id}/pdf`, form);
+  return data;
+}
+
+export async function descargarPdfPresupuesto(id: string, nombre: string): Promise<void> {
+  const res = await api.get(`/presupuestos/${id}/pdf/download`, { responseType: 'blob' });
+  const url = URL.createObjectURL(res.data as Blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = nombre;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 // ─── Público (sin login) ─────────────────────────────────────────────
 export interface PresupuestoPublico {
   concepto: string;
@@ -58,6 +76,13 @@ export interface PresupuestoPublico {
   estado: EstadoPresupuesto;
   aceptadoAt: string | null;
   destinatario: string | null;
+  tienePdf: boolean;
+}
+
+/** URL pública directa de descarga del PDF (endpoint @Public). */
+export function urlPdfPublico(token: string): string {
+  const base = import.meta.env.VITE_API_URL ?? 'http://localhost:3000/api';
+  return `${base}/publico/presupuestos/${token}/pdf`;
 }
 
 export async function getPresupuestoPublico(token: string): Promise<PresupuestoPublico> {

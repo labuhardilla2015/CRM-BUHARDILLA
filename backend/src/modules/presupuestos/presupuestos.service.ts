@@ -6,11 +6,15 @@ import {
 import { EstadoPotencial, EstadoPresupuesto } from '@prisma/client';
 import { randomBytes } from 'crypto';
 import { PrismaService } from '../../prisma/prisma.service';
+import { StorageService } from '../../common/storage/storage.service';
 import { ActualizarPresupuestoDto, CrearPresupuestoDto } from './dto/presupuesto.dto';
 
 @Injectable()
 export class PresupuestosService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private storage: StorageService,
+  ) {}
 
   listarDePotencial(potencialId: string) {
     return this.prisma.presupuesto.findMany({
@@ -53,8 +57,32 @@ export class PresupuestosService {
   }
 
   async eliminar(id: string) {
-    await this.exigir(id);
+    const p = await this.exigir(id);
+    if (p.archivoRuta) this.storage.remove(p.archivoRuta);
     await this.prisma.presupuesto.delete({ where: { id } });
+  }
+
+  // ─── PDF adjunto ───────────────────────────────────────────────────
+  async subirPdf(id: string, file: { buffer: Buffer; originalname: string }) {
+    const p = await this.exigir(id);
+    if (p.archivoRuta) this.storage.remove(p.archivoRuta);
+    const { ruta } = this.storage.save(file.buffer, file.originalname);
+    return this.prisma.presupuesto.update({
+      where: { id },
+      data: { archivoRuta: ruta, archivoNombre: file.originalname.slice(0, 255) },
+    });
+  }
+
+  async pdfParaDescarga(id: string) {
+    const p = await this.exigir(id);
+    if (!p.archivoRuta) throw new NotFoundException('Este presupuesto no tiene PDF');
+    return { absPath: this.storage.absolutePath(p.archivoRuta), nombre: p.archivoNombre ?? 'presupuesto.pdf' };
+  }
+
+  async pdfPublicoPorToken(token: string) {
+    const p = await this.prisma.presupuesto.findUnique({ where: { tokenAceptacion: token } });
+    if (!p?.archivoRuta) throw new NotFoundException('Presupuesto sin PDF');
+    return { absPath: this.storage.absolutePath(p.archivoRuta), nombre: p.archivoNombre ?? 'presupuesto.pdf' };
   }
 
   // ─── Público (por token, sin login) ────────────────────────────────
@@ -71,6 +99,7 @@ export class PresupuestosService {
       estado: p.estado,
       aceptadoAt: p.aceptadoAt,
       destinatario: p.potencial?.nombre ?? null,
+      tienePdf: !!p.archivoRuta,
     };
   }
 

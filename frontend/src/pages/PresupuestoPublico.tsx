@@ -1,9 +1,9 @@
 import { useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { CheckCircle2, XCircle, FileText } from 'lucide-react';
+import { CheckCircle2, XCircle, FileText, Download } from 'lucide-react';
 import {
   aceptarPresupuesto, ESTADO_PRESUPUESTO_LABEL, formatEuro,
-  getPresupuestoPublico, rechazarPresupuesto,
+  getPresupuestoPublico, rechazarPresupuesto, urlPdfPublico,
 } from '@/lib/presupuestos-api';
 import { Button } from '@/components/ui';
 
@@ -43,6 +43,16 @@ export function PresupuestoPublico() {
                 <p className="text-sm font-medium text-slate-800">{p.data.concepto}</p>
                 {p.data.detalle && <p className="mt-1 whitespace-pre-wrap text-sm text-slate-500">{p.data.detalle}</p>}
                 <p className="mt-3 text-2xl font-bold text-brand">{formatEuro(p.data.monto)}</p>
+                {p.data.tienePdf && (
+                  <a
+                    href={urlPdfPublico(token)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="mt-3 inline-flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-1.5 text-sm text-slate-700 hover:border-brand hover:text-brand"
+                  >
+                    <Download className="h-4 w-4" /> Descargar presupuesto (PDF)
+                  </a>
+                )}
               </div>
 
               {p.data.estado === 'ENVIADO' ? (

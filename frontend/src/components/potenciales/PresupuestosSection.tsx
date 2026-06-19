@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { FileText, Send, Link2, Trash2, Plus, Check } from 'lucide-react';
+import { FileText, Send, Link2, Trash2, Plus, Check, Paperclip, Download } from 'lucide-react';
 import {
-  crearPresupuesto, eliminarPresupuesto, enviarPresupuesto, ESTADO_PRESUPUESTO_LABEL,
-  formatEuro, getPresupuestos, type EstadoPresupuesto, type Presupuesto,
+  crearPresupuesto, descargarPdfPresupuesto, eliminarPresupuesto, enviarPresupuesto,
+  ESTADO_PRESUPUESTO_LABEL, formatEuro, getPresupuestos, subirPdfPresupuesto,
+  type EstadoPresupuesto, type Presupuesto,
 } from '@/lib/presupuestos-api';
 import { Button, Input } from '@/components/ui';
 
@@ -88,6 +89,7 @@ export function PresupuestosSection({ potencialId }: { potencialId: string }) {
                 </button>
               )
             )}
+            <PdfBoton presupuesto={p} onChange={refrescar} />
             <button onClick={() => borrar.mutate(p.id)} className="text-slate-400 hover:text-red-600" title="Eliminar">
               <Trash2 className="h-4 w-4" />
             </button>
@@ -109,5 +111,34 @@ export function PresupuestosSection({ potencialId }: { potencialId: string }) {
 
       {copiado && <p className="mt-2 text-xs text-emerald-600">Enlace público copiado al portapapeles ✓</p>}
     </section>
+  );
+}
+
+function PdfBoton({ presupuesto, onChange }: { presupuesto: Presupuesto; onChange: () => void }) {
+  const fileRef = useRef<HTMLInputElement>(null);
+  const subir = useMutation({
+    mutationFn: (f: File) => subirPdfPresupuesto(presupuesto.id, f),
+    onSuccess: onChange,
+  });
+  return (
+    <>
+      <input
+        ref={fileRef} type="file" accept="application/pdf" className="hidden"
+        onChange={(e) => { const f = e.target.files?.[0]; if (f) subir.mutate(f); e.target.value = ''; }}
+      />
+      {presupuesto.archivoNombre ? (
+        <button
+          onClick={() => descargarPdfPresupuesto(presupuesto.id, presupuesto.archivoNombre!)}
+          className="text-brand hover:text-brand-dark"
+          title={`Descargar ${presupuesto.archivoNombre}`}
+        >
+          <Download className="h-4 w-4" />
+        </button>
+      ) : (
+        <button onClick={() => fileRef.current?.click()} disabled={subir.isPending} className="text-slate-400 hover:text-brand" title="Adjuntar PDF del presupuesto">
+          <Paperclip className="h-4 w-4" />
+        </button>
+      )}
+    </>
   );
 }
