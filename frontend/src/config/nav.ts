@@ -3,6 +3,7 @@ import {
   Clock,
   Users,
   Target,
+  IdCard,
   type LucideIcon,
 } from 'lucide-react';
 import type { Rol } from '@/types';
@@ -51,6 +52,12 @@ export const NAV_ITEMS: NavItem[] = [
     to: '/potenciales',
     label: 'Potenciales',
     icon: Target,
+    roles: ['ADMIN'],
+  },
+  {
+    to: '/trabajadores',
+    label: 'Trabajadores',
+    icon: IdCard,
     roles: ['ADMIN'],
   },
 ];
