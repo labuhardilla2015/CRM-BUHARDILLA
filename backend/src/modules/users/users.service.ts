@@ -14,6 +14,15 @@ export class UsersService {
     return this.prisma.usuario.findUnique({ where: { id } });
   }
 
+  /** Listado básico de usuarios (para filtros/selección). */
+  listar() {
+    return this.prisma.usuario.findMany({
+      where: { activo: true },
+      select: { id: true, nombre: true, email: true, rol: true },
+      orderBy: { nombre: 'asc' },
+    });
+  }
+
   create(data: { nombre: string; email: string; passwordHash: string; rol: Rol }): Promise<Usuario> {
     return this.prisma.usuario.create({
       data: { ...data, email: data.email.toLowerCase() },

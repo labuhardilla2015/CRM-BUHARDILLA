@@ -1,5 +1,14 @@
 /** Utilidades de formato de tiempo compartidas por el módulo Reloj. */
 
+/** Segundos → "Xh Ym" (legible para informes). */
+export function formatHoras(totalSeg: number): string {
+  const s = Math.max(0, Math.round(totalSeg));
+  const h = Math.floor(s / 3600);
+  const m = Math.round((s % 3600) / 60);
+  if (h === 0) return `${m}m`;
+  return m === 0 ? `${h}h` : `${h}h ${m}m`;
+}
+
 /** Segundos → "HH:MM:SS". */
 export function formatDuracion(totalSeg: number): string {
   const s = Math.max(0, Math.floor(totalSeg));

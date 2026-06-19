@@ -10,6 +10,7 @@ import { Inicio } from '@/pages/Inicio';
 import { Fichaje } from '@/pages/reloj/Fichaje';
 import { Cronometro } from '@/pages/reloj/Cronometro';
 import { Calendario } from '@/pages/reloj/Calendario';
+import { Informes } from '@/pages/reloj/Informes';
 import { ComingSoon } from '@/components/PageHeader';
 
 export default function App() {
@@ -37,10 +38,7 @@ export default function App() {
             <Route path="/reloj/fichaje" element={<Fichaje />} />
             <Route path="/reloj/cronometro" element={<Cronometro />} />
             <Route path="/reloj/calendario" element={<Calendario />} />
-            <Route
-              path="/reloj/informes"
-              element={<ComingSoon title="Informes de tiempo" fase="Fase 2" desc="Filtra por persona, cliente y acción." />}
-            />
+            <Route path="/reloj/informes" element={<Informes />} />
 
             {/* Clientes (Fase 3) */}
             <Route
