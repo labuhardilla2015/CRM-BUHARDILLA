@@ -74,13 +74,18 @@ export function AuthShell({
   children: React.ReactNode;
 }) {
   return (
-    <div className="grid h-full place-items-center px-4">
-      <div className="w-full max-w-sm rounded-2xl bg-white p-8 shadow-sm ring-1 ring-slate-200">
-        <div className="mb-6 text-center">
-          <h1 className="text-xl font-semibold text-slate-900">{title}</h1>
-          <p className="mt-1 text-sm text-slate-500">{subtitle}</p>
+    <div className="grid h-full place-items-center bg-white px-4">
+      <div className="w-full max-w-sm overflow-hidden rounded-2xl bg-white shadow-md ring-1 ring-slate-200">
+        <div className="flex flex-col items-center bg-sidebar px-8 py-7">
+          <img src="/logo.png" alt="La Buhardilla" className="h-12 w-auto" />
         </div>
-        {children}
+        <div className="p-8">
+          <div className="mb-6 text-center">
+            <h1 className="text-xl font-semibold text-slate-900">{title}</h1>
+            <p className="mt-1 text-sm text-slate-500">{subtitle}</p>
+          </div>
+          {children}
+        </div>
       </div>
     </div>
   );

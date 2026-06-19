@@ -9,7 +9,6 @@ import { Register } from '@/pages/Register';
 import { Inicio } from '@/pages/Inicio';
 import { Fichaje } from '@/pages/reloj/Fichaje';
 import { Cronometro } from '@/pages/reloj/Cronometro';
-import { Calendario } from '@/pages/reloj/Calendario';
 import { Informes } from '@/pages/reloj/Informes';
 import { ComingSoon } from '@/components/PageHeader';
 
@@ -37,7 +36,8 @@ export default function App() {
             <Route path="/reloj" element={<Navigate to="/reloj/fichaje" replace />} />
             <Route path="/reloj/fichaje" element={<Fichaje />} />
             <Route path="/reloj/cronometro" element={<Cronometro />} />
-            <Route path="/reloj/calendario" element={<Calendario />} />
+            {/* Compatibilidad: el calendario ahora vive dentro del cronómetro */}
+            <Route path="/reloj/calendario" element={<Navigate to="/reloj/cronometro" replace />} />
             <Route path="/reloj/informes" element={<Informes />} />
 
             {/* Clientes (Fase 3) */}

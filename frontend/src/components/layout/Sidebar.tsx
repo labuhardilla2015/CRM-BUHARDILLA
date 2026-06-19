@@ -18,15 +18,18 @@ export function Sidebar({ onClose }: { onClose?: () => void }) {
   }
 
   return (
-    <div className="flex h-full w-64 flex-col border-r border-slate-200 bg-white">
-      {/* Marca */}
-      <div className="flex items-center justify-between px-5 py-4">
-        <div>
-          <p className="text-sm font-semibold leading-tight text-slate-900">La Buhardilla</p>
-          <p className="text-xs text-slate-400">CRM interno</p>
+    <div className="flex h-full w-64 flex-col bg-sidebar text-slate-300">
+      {/* Marca / logo */}
+      <div className="flex items-center justify-between px-5 py-5">
+        <div className="flex items-center gap-3">
+          <img src="/logo.png" alt="La Buhardilla" className="h-9 w-auto" />
+          <div className="leading-tight">
+            <p className="text-sm font-semibold text-white">La Buhardilla</p>
+            <p className="text-xs text-slate-500">CRM interno</p>
+          </div>
         </div>
         {onClose && (
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 lg:hidden">
+          <button onClick={onClose} className="text-slate-400 hover:text-white lg:hidden">
             <PanelLeftClose className="h-5 w-5" />
           </button>
         )}
@@ -40,19 +43,19 @@ export function Sidebar({ onClose }: { onClose?: () => void }) {
       </nav>
 
       {/* Usuario + salir */}
-      <div className="border-t border-slate-200 p-3">
+      <div className="border-t border-white/10 p-3">
         <div className="mb-2 flex items-center gap-3 rounded-lg px-2 py-1.5">
-          <div className="grid h-9 w-9 place-items-center rounded-full bg-brand/10 text-sm font-semibold text-brand">
+          <div className="grid h-9 w-9 place-items-center rounded-full bg-brand text-sm font-semibold text-white">
             {usuario.nombre.charAt(0).toUpperCase()}
           </div>
           <div className="min-w-0">
-            <p className="truncate text-sm font-medium text-slate-800">{usuario.nombre}</p>
-            <p className="text-xs text-slate-400">{usuario.rol}</p>
+            <p className="truncate text-sm font-medium text-white">{usuario.nombre}</p>
+            <p className="text-xs text-slate-500">{usuario.rol}</p>
           </div>
         </div>
         <button
           onClick={onLogout}
-          className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-600 transition hover:bg-slate-100"
+          className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-300 transition hover:bg-sidebar-hover hover:text-white"
         >
           <LogOut className="h-4 w-4" /> Cerrar sesión
         </button>
@@ -68,8 +71,7 @@ function NavEntry({ item, onNavigate }: { item: NavItem; onNavigate?: () => void
   const isSectionActive = location.pathname === item.to || location.pathname.startsWith(item.to + '/');
   const [open, setOpen] = useState(isSectionActive);
 
-  const baseLink =
-    'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition';
+  const baseLink = 'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition';
 
   if (!hasChildren) {
     return (
@@ -78,7 +80,10 @@ function NavEntry({ item, onNavigate }: { item: NavItem; onNavigate?: () => void
         end={item.to === '/'}
         onClick={onNavigate}
         className={({ isActive }) =>
-          cn(baseLink, isActive ? 'bg-brand text-white' : 'text-slate-600 hover:bg-slate-100')
+          cn(
+            baseLink,
+            isActive ? 'bg-brand text-white' : 'text-slate-300 hover:bg-sidebar-hover hover:text-white',
+          )
         }
       >
         <Icon className="h-5 w-5 shrink-0" />
@@ -94,11 +99,11 @@ function NavEntry({ item, onNavigate }: { item: NavItem; onNavigate?: () => void
         className={cn(
           baseLink,
           'w-full justify-between',
-          isSectionActive ? 'text-brand' : 'text-slate-600 hover:bg-slate-100',
+          isSectionActive ? 'text-white' : 'text-slate-300 hover:bg-sidebar-hover hover:text-white',
         )}
       >
         <span className="flex items-center gap-3">
-          <Icon className="h-5 w-5 shrink-0" />
+          <Icon className={cn('h-5 w-5 shrink-0', isSectionActive && 'text-brand-light')} />
           {item.label}
         </span>
         <ChevronDown className={cn('h-4 w-4 transition-transform', open && 'rotate-180')} />
@@ -113,7 +118,9 @@ function NavEntry({ item, onNavigate }: { item: NavItem; onNavigate?: () => void
               className={({ isActive }) =>
                 cn(
                   'block rounded-lg px-3 py-1.5 text-sm transition',
-                  isActive ? 'bg-brand/10 font-medium text-brand' : 'text-slate-500 hover:bg-slate-100',
+                  isActive
+                    ? 'bg-brand/20 font-medium text-white'
+                    : 'text-slate-400 hover:bg-sidebar-hover hover:text-white',
                 )
               }
             >

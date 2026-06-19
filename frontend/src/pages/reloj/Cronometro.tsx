@@ -26,6 +26,7 @@ import {
 } from '@/lib/tiempo';
 import { PageHeader } from '@/components/PageHeader';
 import { Button, Input, Select } from '@/components/ui';
+import { WeekCalendar } from '@/components/reloj/WeekCalendar';
 
 export function Cronometro() {
   const qc = useQueryClient();
@@ -45,6 +46,7 @@ export function Cronometro() {
   const refrescar = () => {
     qc.invalidateQueries({ queryKey: ['registro-corriendo'] });
     qc.invalidateQueries({ queryKey: ['registros'] });
+    qc.invalidateQueries({ queryKey: ['registros-semana'] });
   };
 
   // Formulario de arranque
@@ -151,6 +153,11 @@ export function Cronometro() {
             {registrosHoy.isLoading ? 'Cargando…' : 'Aún no has registrado tiempo hoy.'}
           </p>
         )}
+      </div>
+
+      {/* Calendario semanal: refleja en vivo lo que se va registrando */}
+      <div className="mt-10">
+        <WeekCalendar />
       </div>
     </div>
   );

@@ -9,5 +9,6 @@ body,
 }
 
 body {
-  @apply bg-slate-50 text-slate-900 antialiased;
+  /* Fondo blanco corporativo */
+  @apply bg-white text-slate-900 antialiased;
 }

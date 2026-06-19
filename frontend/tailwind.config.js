@@ -4,10 +4,16 @@ export default {
   theme: {
     extend: {
       colors: {
+        // Rojo corporativo de La Buhardilla del Marketing
         brand: {
-          DEFAULT: '#7c3aed',
-          dark: '#5b21b6',
-          light: '#a78bfa',
+          DEFAULT: '#aa0c0c',
+          dark: '#860909',
+          light: '#d11414',
+        },
+        // Negro de la barra lateral
+        sidebar: {
+          DEFAULT: '#0a0a0a',
+          hover: '#1c1c1c',
         },
       },
     },

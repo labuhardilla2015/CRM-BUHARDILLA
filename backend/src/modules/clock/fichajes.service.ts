@@ -21,12 +21,25 @@ export class FichajesService {
     });
   }
 
-  /** Marca de entrada. Falla si ya hay una jornada abierta. */
+  /** Marca de entrada. Falla si hay jornada abierta o se superan 2 fichajes hoy. */
   async entrada(usuarioId: string): Promise<Fichaje> {
     const abierto = await this.estadoActual(usuarioId);
     if (abierto) {
       throw new ConflictException('Ya tienes una jornada abierta');
     }
+
+    const inicioDia = new Date();
+    inicioDia.setHours(0, 0, 0, 0);
+    const finDia = new Date(inicioDia);
+    finDia.setDate(finDia.getDate() + 1);
+
+    const fichajesHoy = await this.prisma.fichaje.count({
+      where: { usuarioId, inicio: { gte: inicioDia, lt: finDia } },
+    });
+    if (fichajesHoy >= 2) {
+      throw new ConflictException('Has alcanzado el máximo de 2 fichajes por día');
+    }
+
     return this.prisma.fichaje.create({
       data: { usuarioId, inicio: new Date() },
     });
