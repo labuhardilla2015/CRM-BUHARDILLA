@@ -27,3 +27,38 @@ export function formatFecha(iso: string): string {
     month: 'short',
   });
 }
+
+/** Lunes 00:00 de la semana que contiene `ref`. */
+export function inicioSemana(ref: Date): Date {
+  const d = new Date(ref);
+  const dia = (d.getDay() + 6) % 7; // 0 = lunes
+  d.setHours(0, 0, 0, 0);
+  d.setDate(d.getDate() - dia);
+  return d;
+}
+
+/** Suma días a una fecha (sin mutar). */
+export function sumarDias(fecha: Date, dias: number): Date {
+  const d = new Date(fecha);
+  d.setDate(d.getDate() + dias);
+  return d;
+}
+
+/** Inicio del día (00:00) de hoy. */
+export function inicioHoy(): Date {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
+/** ISO → valor para <input type="datetime-local"> (hora local). */
+export function toLocalInput(iso: string): string {
+  const d = new Date(iso);
+  const off = d.getTimezoneOffset();
+  return new Date(d.getTime() - off * 60000).toISOString().slice(0, 16);
+}
+
+/** Valor de <input type="datetime-local"> → ISO (UTC). */
+export function fromLocalInput(value: string): string {
+  return new Date(value).toISOString();
+}

@@ -37,3 +37,18 @@ Input.displayName = 'Input';
 export function Label({ className, ...props }: React.LabelHTMLAttributes<HTMLLabelElement>) {
   return <label className={cn('mb-1 block text-sm font-medium text-slate-700', className)} {...props} />;
 }
+
+export const Select = forwardRef<HTMLSelectElement, React.SelectHTMLAttributes<HTMLSelectElement>>(
+  ({ className, ...props }, ref) => (
+    <select
+      ref={ref}
+      className={cn(
+        'w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none',
+        'focus:border-brand focus:ring-2 focus:ring-brand/20',
+        className,
+      )}
+      {...props}
+    />
+  ),
+);
+Select.displayName = 'Select';

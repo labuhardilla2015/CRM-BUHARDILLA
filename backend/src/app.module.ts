@@ -6,6 +6,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
 import { ClockModule } from './modules/clock/clock.module';
+import { ClientesModule } from './modules/clientes/clientes.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
 import { AppController } from './app.controller';
@@ -20,6 +21,7 @@ import { AppController } from './app.controller';
     UsersModule,
     AuthModule,
     ClockModule,
+    ClientesModule,
   ],
   controllers: [AppController],
   providers: [

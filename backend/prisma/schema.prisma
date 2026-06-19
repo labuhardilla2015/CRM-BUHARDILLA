@@ -16,6 +16,19 @@ enum Rol {
   TRABAJADOR
 }
 
+enum AccionTiempo {
+  SEO
+  WEB
+  RRSS
+  DISENO
+  INFORMES
+  SEO_LOCAL
+  ADS
+  ADMINISTRACION
+  ESTRATEGIA
+  EMAIL_MARKETING
+}
+
 /// Usuarios del CRM. El rol se asigna en el registro según la tabla RoleEmail.
 model Usuario {
   id           String   @id @default(uuid())
@@ -28,10 +41,45 @@ model Usuario {
   updatedAt    DateTime @updatedAt @map("updated_at")
 
   refreshTokens    RefreshToken[]
-  fichajes         Fichaje[]      @relation("FichajesPropios")
-  fichajesEditados Fichaje[]      @relation("FichajesEditados")
+  fichajes         Fichaje[]        @relation("FichajesPropios")
+  fichajesEditados Fichaje[]        @relation("FichajesEditados")
+  registrosTiempo  RegistroTiempo[]
 
   @@map("usuarios")
+}
+
+/// Cliente de la agencia. En la Fase 2 se usa para el cronómetro; la Fase 3
+/// (módulo Clientes) lo extenderá con tableros, datos sensibles, etc.
+model Cliente {
+  id        String   @id @default(uuid())
+  nombre    String   @unique @db.VarChar(160)
+  activo    Boolean  @default(true)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  registrosTiempo RegistroTiempo[]
+
+  @@map("clientes")
+}
+
+/// Registro de tiempo (estilo Toggl): tiempo dedicado por un usuario a un
+/// cliente y una acción. `fin` null = cronómetro en marcha. Editable por su
+/// dueño (y por un admin).
+model RegistroTiempo {
+  id          String       @id @default(uuid())
+  usuarioId   String       @map("usuario_id")
+  clienteId   String       @map("cliente_id")
+  accion      AccionTiempo
+  inicio      DateTime
+  fin         DateTime?
+  descripcion String?      @db.VarChar(255)
+  createdAt   DateTime     @default(now()) @map("created_at")
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  cliente Cliente @relation(fields: [clienteId], references: [id], onDelete: Restrict)
+
+  @@index([usuarioId, inicio])
+  @@index([clienteId, inicio])
+  @@map("registros_tiempo")
 }
 
 /// Lista editable por un admin que determina qué correos/dominios son ADMIN.
