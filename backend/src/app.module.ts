@@ -24,8 +24,9 @@ import { AppController } from './app.controller';
       isGlobal: true,
       validate: validateEnv,
     }),
-    // Límite global por IP: 100 peticiones por minuto
-    ThrottlerModule.forRoot([{ ttl: 60_000, limit: 100 }]),
+    // Límite global por IP. Holgado para una SPA con varios usuarios por IP
+    // (websocket, refetches, etc.). El login/registro tiene su propio @Throttle.
+    ThrottlerModule.forRoot([{ ttl: 60_000, limit: 2000 }]),
     PrismaModule,
     CryptoModule,
     UsersModule,
