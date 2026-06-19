@@ -11,7 +11,7 @@ import { Clientes } from '@/pages/Clientes';
 import { Fichaje } from '@/pages/reloj/Fichaje';
 import { Cronometro } from '@/pages/reloj/Cronometro';
 import { Informes } from '@/pages/reloj/Informes';
-import { ComingSoon } from '@/components/PageHeader';
+import { Potenciales } from '@/pages/Potenciales';
 
 export default function App() {
   const setCargando = useAuth((s) => s.setCargando);
@@ -46,10 +46,7 @@ export default function App() {
 
             {/* Potenciales (Fase 4, solo admin) */}
             <Route element={<ProtectedRoute roles={['ADMIN']} />}>
-              <Route
-                path="/potenciales"
-                element={<ComingSoon title="Potenciales" fase="Fase 4" desc="Embudo de clientes potenciales y presupuestos." />}
-              />
+              <Route path="/potenciales" element={<Potenciales />} />
             </Route>
           </Route>
         </Route>

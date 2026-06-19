@@ -51,6 +51,14 @@ enum SeccionClave {
   SERVIDOR
 }
 
+enum EstadoPotencial {
+  NUEVO
+  CONTACTADO
+  PRESUPUESTO_ENVIADO
+  ACEPTADO
+  RECHAZADO
+}
+
 /// Usuarios del CRM. El rol se asigna en el registro según la tabla RoleEmail.
 model Usuario {
   id           String   @id @default(uuid())
@@ -69,6 +77,7 @@ model Usuario {
   comentarios      Comentario[]
   archivos         Archivo[]
   asignaciones     AsignacionTarjeta[]
+  potencialesCreados Potencial[]
 
   @@map("usuarios")
 }
@@ -88,8 +97,29 @@ model Cliente {
   registrosTiempo RegistroTiempo[]
   tableros        Tablero[]
   claves          ClaveCliente[]
+  potencialesConvertidos Potencial[]
 
   @@map("clientes")
+}
+
+/// Cliente potencial (lead) en el embudo de ventas. Solo lo gestionan admins.
+model Potencial {
+  id                  String          @id @default(uuid())
+  nombre              String          @db.VarChar(160)
+  contacto            String?         @db.VarChar(255)
+  origen              String?         @db.VarChar(120)
+  notas               String?         @db.Text
+  estado              EstadoPotencial @default(NUEVO)
+  clienteConvertidoId String?         @map("cliente_convertido_id")
+  createdById         String?         @map("created_by_id")
+  createdAt           DateTime        @default(now()) @map("created_at")
+  updatedAt           DateTime        @updatedAt @map("updated_at")
+
+  cliente   Cliente? @relation(fields: [clienteConvertidoId], references: [id], onDelete: SetNull)
+  createdBy Usuario? @relation(fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([estado])
+  @@map("potenciales")
 }
 
 /// Hoja de claves del cliente (tipo Excel), separada por claves y servidores.
