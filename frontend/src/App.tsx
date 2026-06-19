@@ -12,6 +12,7 @@ import { Fichaje } from '@/pages/reloj/Fichaje';
 import { Cronometro } from '@/pages/reloj/Cronometro';
 import { Informes } from '@/pages/reloj/Informes';
 import { Potenciales } from '@/pages/Potenciales';
+import { PresupuestoPublico } from '@/pages/PresupuestoPublico';
 
 export default function App() {
   const setCargando = useAuth((s) => s.setCargando);
@@ -27,6 +28,8 @@ export default function App() {
         {/* Públicas */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        {/* Aceptación de presupuesto por el potencial (sin login) */}
+        <Route path="/presupuesto/:token" element={<PresupuestoPublico />} />
 
         {/* Privadas dentro del layout con menú lateral */}
         <Route element={<ProtectedRoute />}>

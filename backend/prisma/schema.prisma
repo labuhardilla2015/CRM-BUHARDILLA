@@ -59,6 +59,13 @@ enum EstadoPotencial {
   RECHAZADO
 }
 
+enum EstadoPresupuesto {
+  BORRADOR
+  ENVIADO
+  ACEPTADO
+  RECHAZADO
+}
+
 /// Usuarios del CRM. El rol se asigna en el registro según la tabla RoleEmail.
 model Usuario {
   id           String   @id @default(uuid())
@@ -98,6 +105,7 @@ model Cliente {
   tableros        Tablero[]
   claves          ClaveCliente[]
   potencialesConvertidos Potencial[]
+  presupuestos    Presupuesto[]
 
   @@map("clientes")
 }
@@ -115,11 +123,33 @@ model Potencial {
   createdAt           DateTime        @default(now()) @map("created_at")
   updatedAt           DateTime        @updatedAt @map("updated_at")
 
-  cliente   Cliente? @relation(fields: [clienteConvertidoId], references: [id], onDelete: SetNull)
-  createdBy Usuario? @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  cliente      Cliente?      @relation(fields: [clienteConvertidoId], references: [id], onDelete: SetNull)
+  createdBy    Usuario?      @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  presupuestos Presupuesto[]
 
   @@index([estado])
   @@map("potenciales")
+}
+
+/// Presupuesto enviado a un potencial (o cliente). La aceptación se hace desde
+/// una página pública con un token único, sin necesidad de login.
+model Presupuesto {
+  id              String            @id @default(uuid())
+  potencialId     String?           @map("potencial_id")
+  clienteId       String?           @map("cliente_id")
+  concepto        String            @db.VarChar(255)
+  detalle         String?           @db.Text
+  monto           Decimal           @db.Decimal(10, 2)
+  estado          EstadoPresupuesto @default(BORRADOR)
+  tokenAceptacion String?           @unique @map("token_aceptacion")
+  aceptadoAt      DateTime?         @map("aceptado_at")
+  createdAt       DateTime          @default(now()) @map("created_at")
+  updatedAt       DateTime          @updatedAt @map("updated_at")
+
+  potencial Potencial? @relation(fields: [potencialId], references: [id], onDelete: Cascade)
+  cliente   Cliente?   @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+
+  @@map("presupuestos")
 }
 
 /// Hoja de claves del cliente (tipo Excel), separada por claves y servidores.

@@ -7,6 +7,7 @@ import {
 } from '@/lib/potenciales-api';
 import { errorMessage } from '@/lib/auth-api';
 import { Button, Input, Select } from '@/components/ui';
+import { PresupuestosSection } from './PresupuestosSection';
 
 export function PotencialModal({ potencial, onClose }: { potencial: Potencial; onClose: () => void }) {
   const qc = useQueryClient();
@@ -41,7 +42,7 @@ export function PotencialModal({ potencial, onClose }: { potencial: Potencial; o
 
   return (
     <div className="fixed inset-0 z-50 grid place-items-center bg-black/40 p-4" onClick={onClose}>
-      <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
+      <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
         <div className="mb-4 flex items-start justify-between">
           <h3 className="text-base font-semibold text-slate-900">Potencial</h3>
           <button onClick={onClose} className="text-slate-400 hover:text-slate-700"><X className="h-5 w-5" /></button>
@@ -92,6 +93,11 @@ export function PotencialModal({ potencial, onClose }: { potencial: Potencial; o
             )}
             {msg && <p className="mt-2 text-sm text-emerald-600">{msg}</p>}
             {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+          </div>
+
+          {/* Presupuestos */}
+          <div className="border-t border-slate-100 pt-4">
+            <PresupuestosSection potencialId={potencial.id} />
           </div>
         </div>
 

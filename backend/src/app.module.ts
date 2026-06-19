@@ -10,6 +10,7 @@ import { ClockModule } from './modules/clock/clock.module';
 import { ClientesModule } from './modules/clientes/clientes.module';
 import { TablerosModule } from './modules/tableros/tableros.module';
 import { PotencialesModule } from './modules/potenciales/potenciales.module';
+import { PresupuestosModule } from './modules/presupuestos/presupuestos.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
 import { AppController } from './app.controller';
@@ -28,6 +29,7 @@ import { AppController } from './app.controller';
     ClientesModule,
     TablerosModule,
     PotencialesModule,
+    PresupuestosModule,
   ],
   controllers: [AppController],
   providers: [
