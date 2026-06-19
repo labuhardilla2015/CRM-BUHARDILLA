@@ -1,7 +1,0 @@
-Coloca aquí los archivos de marca:
-
-  - logo.png      → logo blanco (se muestra en la barra lateral negra y en el login)
-  - favicon.png   → icono de la pestaña del navegador
-
-Vite sirve esta carpeta en la raíz, así que el código los referencia como
-"/logo.png" y "/favicon.png".
