@@ -9,7 +9,7 @@ import {
   useSensors,
   type DragEndEvent,
 } from '@dnd-kit/core';
-import { Plus } from 'lucide-react';
+import { Plus, MessageSquare, Paperclip, CheckSquare } from 'lucide-react';
 import {
   actualizarTarjeta,
   crearTarjeta,
@@ -154,6 +154,32 @@ function TarjetaCard({ tarjeta, onAbrir }: { tarjeta: Tarjeta; onAbrir: (t: Tarj
           <div className="h-full rounded-full bg-brand" style={{ width: `${tarjeta.progreso}%` }} />
         </div>
         <span className="text-[10px] tabular-nums text-slate-400">{tarjeta.progreso}%</span>
+      </div>
+
+      {/* Pie: contadores + avatares de asignados */}
+      <div className="mt-2 flex items-center justify-between">
+        <div className="flex items-center gap-2 text-[10px] text-slate-400">
+          {!!tarjeta._count?.comentarios && (
+            <span className="flex items-center gap-0.5"><MessageSquare className="h-3 w-3" />{tarjeta._count.comentarios}</span>
+          )}
+          {!!tarjeta._count?.archivos && (
+            <span className="flex items-center gap-0.5"><Paperclip className="h-3 w-3" />{tarjeta._count.archivos}</span>
+          )}
+          {!!tarjeta._count?.checklistItems && (
+            <span className="flex items-center gap-0.5"><CheckSquare className="h-3 w-3" />{tarjeta._count.checklistItems}</span>
+          )}
+        </div>
+        <div className="flex -space-x-1.5">
+          {tarjeta.asignaciones?.slice(0, 3).map((a) => (
+            <span
+              key={a.usuarioId}
+              title={a.usuario.nombre}
+              className="grid h-5 w-5 place-items-center rounded-full bg-brand text-[9px] font-semibold text-white ring-2 ring-white"
+            >
+              {a.usuario.nombre.charAt(0).toUpperCase()}
+            </span>
+          ))}
+        </div>
       </div>
     </div>
   );

@@ -10,6 +10,13 @@ const incluirTablero = {
   tablero: { select: { tipo: true, clienteId: true } },
 } satisfies Prisma.TarjetaInclude;
 
+/** Include para listados: añade asignados y contadores para las tarjetas. */
+const incluirResumenTarjeta = {
+  tablero: { select: { tipo: true, clienteId: true } },
+  asignaciones: { include: { usuario: { select: { id: true, nombre: true } } } },
+  _count: { select: { comentarios: true, archivos: true, checklistItems: true } },
+} satisfies Prisma.TarjetaInclude;
+
 @Injectable()
 export class TablerosService {
   constructor(private prisma: PrismaService) {}
@@ -35,7 +42,7 @@ export class TablerosService {
   listarTarjetas(clienteId: string, tipo?: TipoTablero) {
     return this.prisma.tarjeta.findMany({
       where: { tablero: { clienteId, ...(tipo ? { tipo } : {}) } },
-      include: incluirTablero,
+      include: incluirResumenTarjeta,
       orderBy: [{ estado: 'asc' }, { orden: 'asc' }],
     });
   }

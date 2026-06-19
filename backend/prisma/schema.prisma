@@ -61,6 +61,9 @@ model Usuario {
   fichajes         Fichaje[]        @relation("FichajesPropios")
   fichajesEditados Fichaje[]        @relation("FichajesEditados")
   registrosTiempo  RegistroTiempo[]
+  comentarios      Comentario[]
+  archivos         Archivo[]
+  asignaciones     AsignacionTarjeta[]
 
   @@map("usuarios")
 }
@@ -111,10 +114,75 @@ model Tarjeta {
   createdAt   DateTime      @default(now()) @map("created_at")
   updatedAt   DateTime      @updatedAt @map("updated_at")
 
-  tablero Tablero @relation(fields: [tableroId], references: [id], onDelete: Cascade)
+  tablero       Tablero             @relation(fields: [tableroId], references: [id], onDelete: Cascade)
+  comentarios   Comentario[]
+  checklistItems ChecklistItem[]
+  archivos      Archivo[]
+  asignaciones  AsignacionTarjeta[]
 
   @@index([tableroId, estado])
   @@map("tarjetas")
+}
+
+/// Comentario / chat de una tarjeta.
+model Comentario {
+  id        String   @id @default(uuid())
+  tarjetaId String   @map("tarjeta_id")
+  usuarioId String   @map("usuario_id")
+  texto     String   @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+
+  tarjeta Tarjeta @relation(fields: [tarjetaId], references: [id], onDelete: Cascade)
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@index([tarjetaId])
+  @@map("comentarios")
+}
+
+/// Ítem de checklist de una tarjeta.
+model ChecklistItem {
+  id         String   @id @default(uuid())
+  tarjetaId  String   @map("tarjeta_id")
+  texto      String   @db.VarChar(300)
+  completado Boolean  @default(false)
+  orden      Int      @default(0)
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  tarjeta Tarjeta @relation(fields: [tarjetaId], references: [id], onDelete: Cascade)
+
+  @@index([tarjetaId])
+  @@map("checklist_items")
+}
+
+/// Archivo adjunto a una tarjeta (guardado en disco vía StorageService).
+model Archivo {
+  id        String   @id @default(uuid())
+  tarjetaId String   @map("tarjeta_id")
+  usuarioId String   @map("usuario_id")
+  nombre    String   @db.VarChar(255)
+  ruta      String   @db.VarChar(255)
+  mime      String   @db.VarChar(120)
+  tamano    Int
+  createdAt DateTime @default(now()) @map("created_at")
+
+  tarjeta Tarjeta @relation(fields: [tarjetaId], references: [id], onDelete: Cascade)
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@index([tarjetaId])
+  @@map("archivos")
+}
+
+/// Asignación de un trabajador a una tarjeta (M:N).
+model AsignacionTarjeta {
+  tarjetaId String   @map("tarjeta_id")
+  usuarioId String   @map("usuario_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  tarjeta Tarjeta @relation(fields: [tarjetaId], references: [id], onDelete: Cascade)
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@id([tarjetaId, usuarioId])
+  @@map("asignaciones_tarjeta")
 }
 
 /// Registro de tiempo (estilo Toggl): tiempo dedicado por un usuario a un
