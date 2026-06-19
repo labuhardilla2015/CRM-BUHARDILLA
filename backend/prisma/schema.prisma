@@ -155,6 +155,7 @@ model Cliente {
   nombre    String   @unique @db.VarChar(160)
   contacto  String?  @db.VarChar(255)
   notas     String?  @db.Text
+  logoRuta  String?  @map("logo_ruta") @db.VarChar(255)
   /// Datos sensibles cifrados con AES-256-GCM (solo accesibles desde "Control").
   datosSensibles String? @map("datos_sensibles") @db.Text
   activo    Boolean  @default(true)

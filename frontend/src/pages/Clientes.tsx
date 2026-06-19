@@ -1,11 +1,13 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Plus, Building2, Pencil, Save, X, KeyRound } from 'lucide-react';
+import { Plus, Pencil, Save, X, KeyRound, Search, ArrowLeft, ImagePlus } from 'lucide-react';
 import {
   actualizarCliente,
   crearCliente,
   getCliente,
   getClientes,
+  subirLogo,
   type Cliente,
 } from '@/lib/clientes-api';
 import { errorMessage } from '@/lib/auth-api';
@@ -16,6 +18,7 @@ import { BoardPanel } from '@/components/clientes/BoardPanel';
 import { GlobalTasks } from '@/components/clientes/GlobalTasks';
 import { EnlacesCliente, DocumentosCliente } from '@/components/clientes/ClienteRecursos';
 import { LimitesCard } from '@/components/clientes/LimitesCard';
+import { ClienteLogo } from '@/components/clientes/ClienteLogo';
 import { Link } from 'react-router-dom';
 import { Button, Input, Select } from '@/components/ui';
 
@@ -23,7 +26,11 @@ export function Clientes() {
   const usuario = useAuth((s) => s.usuario)!;
   const esAdmin = usuario.rol === 'ADMIN';
   const qc = useQueryClient();
-  const [seleccionado, setSeleccionado] = useState('');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const seleccionado = searchParams.get('cliente') ?? '';
+  const setSeleccionado = (id: string) => setSearchParams(id ? { cliente: id } : {});
+
+  const [busqueda, setBusqueda] = useState('');
   const [añadiendo, setAñadiendo] = useState(false);
   const [nuevoNombre, setNuevoNombre] = useState('');
   const [errCrear, setErrCrear] = useState('');
@@ -41,16 +48,40 @@ export function Clientes() {
     onError: (e) => setErrCrear(errorMessage(e)),
   });
 
+  const filtrados = (clientes.data ?? []).filter((c) =>
+    c.nombre.toLowerCase().includes(busqueda.trim().toLowerCase()),
+  );
+
+  // Ficha de un cliente seleccionado
+  if (seleccionado) {
+    return (
+      <div className="p-6 lg:p-8">
+        <button
+          onClick={() => setSeleccionado('')}
+          className="mb-4 flex items-center gap-2 text-sm text-slate-500 hover:text-brand"
+        >
+          <ArrowLeft className="h-4 w-4" /> Todos los clientes
+        </button>
+        <FichaCliente clienteId={seleccionado} esAdmin={esAdmin} />
+      </div>
+    );
+  }
+
+  // Vista general: grid de todos los clientes + buscador + selector
   return (
     <div className="p-6 lg:p-8">
-      <PageHeader title="Clientes" subtitle="Selecciona un cliente para ver su ficha." />
+      <PageHeader title="Clientes" subtitle="Todos tus clientes. Busca o elige uno para ver su ficha." />
 
-      {/* Selector + añadir */}
       <div className="mb-6 flex flex-wrap items-end gap-3">
-        <div className="min-w-64">
-          <label className="mb-1 block text-xs font-medium text-slate-500">Cliente</label>
-          <Select value={seleccionado} onChange={(e) => setSeleccionado(e.target.value)}>
-            <option value="">— Elegir cliente —</option>
+        <div className="relative min-w-64 flex-1">
+          <label className="mb-1 block text-xs font-medium text-slate-500">Buscar</label>
+          <Search className="pointer-events-none absolute bottom-2.5 left-3 h-4 w-4 text-slate-400" />
+          <Input value={busqueda} onChange={(e) => setBusqueda(e.target.value)} placeholder="Nombre del cliente…" className="pl-9" />
+        </div>
+        <div className="min-w-56">
+          <label className="mb-1 block text-xs font-medium text-slate-500">Ir a cliente</label>
+          <Select value="" onChange={(e) => e.target.value && setSeleccionado(e.target.value)}>
+            <option value="">— Elegir —</option>
             {clientes.data?.map((c) => (
               <option key={c.id} value={c.id}>{c.nombre}</option>
             ))}
@@ -58,18 +89,12 @@ export function Clientes() {
         </div>
         {añadiendo ? (
           <div className="flex items-end gap-2">
-            <div>
-              <label className="mb-1 block text-xs font-medium text-slate-500">Nuevo cliente</label>
-              <Input
-                autoFocus
-                value={nuevoNombre}
-                onChange={(e) => { setNuevoNombre(e.target.value); setErrCrear(''); }}
-                placeholder="Nombre"
-              />
-            </div>
-            <Button onClick={() => nuevoNombre.trim() && crear.mutate()} disabled={crear.isPending}>
-              Guardar
-            </Button>
+            <Input
+              autoFocus value={nuevoNombre}
+              onChange={(e) => { setNuevoNombre(e.target.value); setErrCrear(''); }}
+              placeholder="Nuevo cliente"
+            />
+            <Button onClick={() => nuevoNombre.trim() && crear.mutate()} disabled={crear.isPending}>Guardar</Button>
             <Button variant="ghost" onClick={() => { setAñadiendo(false); setErrCrear(''); }}>Cancelar</Button>
           </div>
         ) : (
@@ -80,15 +105,26 @@ export function Clientes() {
       </div>
       {errCrear && <p className="-mt-3 mb-4 text-sm text-red-600">{errCrear}</p>}
 
-      {seleccionado ? (
-        <FichaCliente clienteId={seleccionado} esAdmin={esAdmin} />
-      ) : (
-        <div className="grid place-items-center rounded-xl border border-dashed border-slate-300 bg-white py-20 text-center text-sm text-slate-400">
-          <div className="flex flex-col items-center gap-2">
-            <Building2 className="h-8 w-8 text-slate-300" />
-            Elige un cliente del desplegable para ver su ficha.
-          </div>
+      {filtrados.length ? (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {filtrados.map((c) => (
+            <button
+              key={c.id}
+              onClick={() => setSeleccionado(c.id)}
+              className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-4 text-left transition hover:ring-2 hover:ring-brand/30"
+            >
+              <ClienteLogo id={c.id} nombre={c.nombre} logoRuta={c.logoRuta} className="h-12 w-12 shrink-0 text-lg" />
+              <div className="min-w-0">
+                <p className="truncate font-medium text-slate-800">{c.nombre}</p>
+                {c.contacto && <p className="truncate text-xs text-slate-400">{c.contacto}</p>}
+              </div>
+            </button>
+          ))}
         </div>
+      ) : (
+        <p className="rounded-xl border border-dashed border-slate-300 bg-white py-16 text-center text-sm text-slate-400">
+          {clientes.isLoading ? 'Cargando…' : busqueda ? 'Ningún cliente coincide con la búsqueda.' : 'Aún no hay clientes.'}
+        </p>
       )}
     </div>
   );
@@ -106,20 +142,21 @@ function FichaCliente({ clienteId, esAdmin }: { clienteId: string; esAdmin: bool
       {/* Cabecera de la ficha + acceso rápido a claves */}
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-sidebar px-5 py-4 text-white">
         <div className="flex items-center gap-3">
-          <div className="grid h-11 w-11 place-items-center rounded-lg bg-brand text-lg font-semibold">
-            {cliente.data.nombre.charAt(0).toUpperCase()}
-          </div>
+          <ClienteLogo id={clienteId} nombre={cliente.data.nombre} logoRuta={cliente.data.logoRuta} className="h-12 w-12 bg-white" />
           <div>
             <h2 className="text-lg font-semibold">{cliente.data.nombre}</h2>
             {cliente.data.contacto && <p className="text-sm text-slate-300">{cliente.data.contacto}</p>}
           </div>
         </div>
-        <Link
-          to={`/clientes/${clienteId}/claves`}
-          className="flex items-center gap-2 rounded-lg bg-brand px-4 py-2 text-sm font-medium text-white transition hover:bg-brand-dark"
-        >
-          <KeyRound className="h-4 w-4" /> Claves de acceso
-        </Link>
+        <div className="flex items-center gap-2">
+          {esAdmin && <LogoUploader clienteId={clienteId} />}
+          <Link
+            to={`/clientes/${clienteId}/claves`}
+            className="flex items-center gap-2 rounded-lg bg-brand px-4 py-2 text-sm font-medium text-white transition hover:bg-brand-dark"
+          >
+            <KeyRound className="h-4 w-4" /> Claves de acceso
+          </Link>
+        </div>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
@@ -205,5 +242,31 @@ function InfoCliente({ cliente, esAdmin }: { cliente: Cliente; esAdmin: boolean 
         </dl>
       )}
     </section>
+  );
+}
+
+function LogoUploader({ clienteId }: { clienteId: string }) {
+  const qc = useQueryClient();
+  const fileRef = useRef<HTMLInputElement>(null);
+  const subir = useMutation({
+    mutationFn: (f: File) => subirLogo(clienteId, f),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['cliente', clienteId] });
+      qc.invalidateQueries({ queryKey: ['clientes'] });
+      qc.invalidateQueries({ queryKey: ['logo', clienteId] });
+    },
+  });
+  return (
+    <>
+      <input ref={fileRef} type="file" accept="image/*" className="hidden"
+        onChange={(e) => { const f = e.target.files?.[0]; if (f) subir.mutate(f); e.target.value = ''; }} />
+      <button
+        onClick={() => fileRef.current?.click()}
+        disabled={subir.isPending}
+        className="flex items-center gap-2 rounded-lg bg-white/10 px-3 py-2 text-sm font-medium text-white transition hover:bg-white/20"
+      >
+        <ImagePlus className="h-4 w-4" /> {subir.isPending ? 'Subiendo…' : 'Logo'}
+      </button>
+    </>
   );
 }

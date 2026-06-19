@@ -6,6 +6,7 @@ export interface Cliente {
   nombre: string;
   contacto: string | null;
   notas: string | null;
+  logoRuta: string | null;
   activo: boolean;
   createdAt: string;
 }
@@ -184,4 +185,16 @@ export async function getLimites(id: string): Promise<LimiteUso[]> {
 
 export async function setLimite(id: string, accion: AccionTiempo, horas: number): Promise<void> {
   await api.put(`/clientes/${id}/limites/${accion}`, { horas });
+}
+
+// ─── Logo del cliente ────────────────────────────────────────────────
+export async function subirLogo(id: string, file: File): Promise<void> {
+  const form = new FormData();
+  form.append('file', file);
+  await api.post(`/clientes/${id}/logo`, form);
+}
+
+export async function getLogoUrl(id: string): Promise<string> {
+  const res = await api.get(`/clientes/${id}/logo`, { responseType: 'blob' });
+  return URL.createObjectURL(res.data as Blob);
 }

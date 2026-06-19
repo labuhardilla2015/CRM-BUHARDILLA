@@ -67,6 +67,22 @@ export class ClienteExtrasService {
     await this.prisma.enlaceCliente.delete({ where: { id: enlaceId } });
   }
 
+  // ─── Logo del cliente ──────────────────────────────────────────────
+  async subirLogo(clienteId: string, file: { buffer: Buffer; originalname: string }) {
+    const c = await this.prisma.cliente.findUnique({ where: { id: clienteId }, select: { logoRuta: true } });
+    if (!c) throw new NotFoundException('Cliente no encontrado');
+    if (c.logoRuta) this.storage.remove(c.logoRuta);
+    const { ruta } = this.storage.save(file.buffer, file.originalname);
+    await this.prisma.cliente.update({ where: { id: clienteId }, data: { logoRuta: ruta } });
+    return { ok: true };
+  }
+
+  async logoParaServir(clienteId: string) {
+    const c = await this.prisma.cliente.findUnique({ where: { id: clienteId }, select: { logoRuta: true } });
+    if (!c?.logoRuta) throw new NotFoundException('Este cliente no tiene logo');
+    return { absPath: this.storage.absolutePath(c.logoRuta) };
+  }
+
   private async exigirCliente(id: string) {
     const c = await this.prisma.cliente.findUnique({ where: { id }, select: { id: true } });
     if (!c) throw new NotFoundException('Cliente no encontrado');

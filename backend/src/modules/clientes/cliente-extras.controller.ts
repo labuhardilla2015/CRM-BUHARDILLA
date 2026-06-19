@@ -50,6 +50,20 @@ export class ClienteExtrasController {
     return this.extras.eliminarDocumento(docId);
   }
 
+  // ─── Logo ──────────────────────────────────────────────────────────
+  @Post('clientes/:id/logo')
+  @UseInterceptors(FileInterceptor('file', { limits: { fileSize: MAX_DOC } }))
+  subirLogo(@Param('id', ParseUUIDPipe) id: string, @UploadedFile() file: Express.Multer.File) {
+    if (!file) throw new BadRequestException('Falta la imagen');
+    return this.extras.subirLogo(id, file);
+  }
+
+  @Get('clientes/:id/logo')
+  async verLogo(@Param('id', ParseUUIDPipe) id: string, @Res() res: Response) {
+    const l = await this.extras.logoParaServir(id);
+    res.sendFile(l.absPath);
+  }
+
   // ─── Enlaces / redes ───────────────────────────────────────────────
   @Get('clientes/:id/enlaces')
   enlaces(@Param('id', ParseUUIDPipe) id: string) {
