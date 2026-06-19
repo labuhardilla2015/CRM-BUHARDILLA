@@ -13,6 +13,7 @@ import { useAuth } from '@/store/auth';
 import { PageHeader } from '@/components/PageHeader';
 import { ControlPanel } from '@/components/clientes/ControlPanel';
 import { BoardPanel } from '@/components/clientes/BoardPanel';
+import { GlobalTasks } from '@/components/clientes/GlobalTasks';
 import { Button, Input, Select } from '@/components/ui';
 
 export function Clientes() {
@@ -114,6 +115,9 @@ function FichaCliente({ clienteId, esAdmin }: { clienteId: string; esAdmin: bool
         <InfoCliente cliente={cliente.data} esAdmin={esAdmin} />
         {esAdmin && <ControlPanel clienteId={clienteId} />}
       </div>
+
+      {/* Vista global de tareas en curso */}
+      <GlobalTasks clienteId={clienteId} />
 
       {/* Tableros tipo Trello */}
       <BoardPanel clienteId={clienteId} />

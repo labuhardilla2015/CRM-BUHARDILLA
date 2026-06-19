@@ -39,9 +39,18 @@ export class TablerosService {
   }
 
   /** Tarjetas de un cliente, opcionalmente filtradas por tipo de tablero. */
-  listarTarjetas(clienteId: string, tipo?: TipoTablero) {
+  listarTarjetas(
+    clienteId: string,
+    opts: { tipo?: TipoTablero; asignadoId?: string; activas?: boolean } = {},
+  ) {
     return this.prisma.tarjeta.findMany({
-      where: { tablero: { clienteId, ...(tipo ? { tipo } : {}) } },
+      where: {
+        tablero: { clienteId, ...(opts.tipo ? { tipo: opts.tipo } : {}) },
+        ...(opts.activas ? { estado: { not: EstadoTarjeta.HECHO } } : {}),
+        ...(opts.asignadoId
+          ? { asignaciones: { some: { usuarioId: opts.asignadoId } } }
+          : {}),
+      },
       include: incluirResumenTarjeta,
       orderBy: [{ estado: 'asc' }, { orden: 'asc' }],
     });

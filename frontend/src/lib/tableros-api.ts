@@ -119,6 +119,14 @@ export async function getTarjetas(clienteId: string, tipo?: TipoTablero): Promis
   return data;
 }
 
+/** Tareas activas (no HECHO) del cliente para la vista global, filtrables por trabajador. */
+export async function getTareasActivas(clienteId: string, asignadoId?: string): Promise<Tarjeta[]> {
+  const { data } = await api.get<Tarjeta[]>(`/clientes/${clienteId}/tarjetas`, {
+    params: { activas: true, ...(asignadoId ? { asignadoId } : {}) },
+  });
+  return data;
+}
+
 export async function crearTarjeta(clienteId: string, body: CrearTarjeta): Promise<Tarjeta> {
   const { data } = await api.post<Tarjeta>(`/clientes/${clienteId}/tarjetas`, body);
   return data;

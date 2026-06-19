@@ -1,10 +1,13 @@
 import { EstadoTarjeta, TipoTablero } from '@prisma/client';
+import { Transform } from 'class-transformer';
 import {
+  IsBoolean,
   IsDateString,
   IsEnum,
   IsInt,
   IsOptional,
   IsString,
+  IsUUID,
   Max,
   MaxLength,
   Min,
@@ -78,4 +81,15 @@ export class TarjetasQueryDto {
   @IsOptional()
   @IsEnum(TipoTablero)
   tipo?: TipoTablero;
+
+  /** Filtra por trabajador asignado. */
+  @IsOptional()
+  @IsUUID()
+  asignadoId?: string;
+
+  /** Solo tareas activas (no HECHO). */
+  @IsOptional()
+  @Transform(({ value }) => value === 'true' || value === true)
+  @IsBoolean()
+  activas?: boolean;
 }

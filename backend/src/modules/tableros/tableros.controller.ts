@@ -28,13 +28,13 @@ export class TablerosController {
     return this.tableros.resumen(clienteId);
   }
 
-  /** Tarjetas del cliente (opcionalmente de un tablero concreto). */
+  /** Tarjetas del cliente (filtrable por tablero, trabajador y estado activo). */
   @Get('clientes/:clienteId/tarjetas')
   listar(
     @Param('clienteId', ParseUUIDPipe) clienteId: string,
     @Query() query: TarjetasQueryDto,
   ) {
-    return this.tableros.listarTarjetas(clienteId, query.tipo);
+    return this.tableros.listarTarjetas(clienteId, query);
   }
 
   /** Crear una tarjeta (crea el tablero si no existía). */
