@@ -55,6 +55,11 @@ class EnvironmentVariables {
   @MinLength(64, { message: 'ENCRYPTION_KEY debe ser 32 bytes en hex (64 caracteres)' })
   @IsOptional()
   ENCRYPTION_KEY?: string;
+
+  // Contraseña del apartado "Control" dentro de un cliente (solo admins).
+  @IsString()
+  @IsOptional()
+  CONTROL_PASSWORD = 'Buhardilla';
 }
 
 export function validateEnv(config: Record<string, unknown>) {

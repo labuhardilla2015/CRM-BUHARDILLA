@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { validateEnv } from './config/env.validation';
 import { PrismaModule } from './prisma/prisma.module';
+import { CryptoModule } from './common/crypto/crypto.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
 import { ClockModule } from './modules/clock/clock.module';
@@ -18,6 +19,7 @@ import { AppController } from './app.controller';
       validate: validateEnv,
     }),
     PrismaModule,
+    CryptoModule,
     UsersModule,
     AuthModule,
     ClockModule,

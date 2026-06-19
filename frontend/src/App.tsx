@@ -7,6 +7,7 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { Login } from '@/pages/Login';
 import { Register } from '@/pages/Register';
 import { Inicio } from '@/pages/Inicio';
+import { Clientes } from '@/pages/Clientes';
 import { Fichaje } from '@/pages/reloj/Fichaje';
 import { Cronometro } from '@/pages/reloj/Cronometro';
 import { Informes } from '@/pages/reloj/Informes';
@@ -41,10 +42,7 @@ export default function App() {
             <Route path="/reloj/informes" element={<Informes />} />
 
             {/* Clientes (Fase 3) */}
-            <Route
-              path="/clientes"
-              element={<ComingSoon title="Clientes" fase="Fase 3" desc="Tableros tipo Trello, fichas y hoja de claves." />}
-            />
+            <Route path="/clientes" element={<Clientes />} />
 
             {/* Potenciales (Fase 4, solo admin) */}
             <Route element={<ProtectedRoute roles={['ADMIN']} />}>
