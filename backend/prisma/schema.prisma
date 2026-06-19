@@ -66,6 +66,12 @@ enum EstadoPresupuesto {
   RECHAZADO
 }
 
+enum TipoNotificacion {
+  TARJETA_ASIGNADA
+  POTENCIAL
+  REUNION
+}
+
 /// Usuarios del CRM. El rol se asigna en el registro según la tabla RoleEmail.
 model Usuario {
   id           String   @id @default(uuid())
@@ -85,8 +91,28 @@ model Usuario {
   archivos         Archivo[]
   asignaciones     AsignacionTarjeta[]
   potencialesCreados Potencial[]
+  notificaciones   Notificacion[]
 
   @@map("usuarios")
+}
+
+/// Notificación dirigida a un usuario (p. ej. asignación de tarjeta con su
+/// fecha de fin). Se emite también por WebSocket en tiempo real.
+model Notificacion {
+  id         String           @id @default(uuid())
+  usuarioId  String           @map("usuario_id")
+  tipo       TipoNotificacion
+  mensaje    String           @db.VarChar(300)
+  entidadTipo String?         @map("entidad_tipo") @db.VarChar(40)
+  entidadId  String?          @map("entidad_id")
+  fechaFin   DateTime?        @map("fecha_fin")
+  leida      Boolean          @default(false)
+  createdAt  DateTime         @default(now()) @map("created_at")
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@index([usuarioId, leida])
+  @@map("notificaciones")
 }
 
 /// Cliente de la agencia. En la Fase 2 se usa para el cronómetro; la Fase 3

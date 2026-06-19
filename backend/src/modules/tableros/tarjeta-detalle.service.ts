@@ -6,6 +6,7 @@ import {
 import { Rol } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { StorageService } from '../../common/storage/storage.service';
+import { NotificationsService } from '../notifications/notifications.service';
 
 const autorSelect = { select: { id: true, nombre: true } };
 
@@ -14,6 +15,7 @@ export class TarjetaDetalleService {
   constructor(
     private prisma: PrismaService,
     private storage: StorageService,
+    private notifications: NotificationsService,
   ) {}
 
   /** Detalle completo de la tarjeta para el modal. */
@@ -68,7 +70,20 @@ export class TarjetaDetalleService {
 
   // ─── Asignaciones ──────────────────────────────────────────────────
   async setAsignados(tarjetaId: string, usuarioIds: string[]) {
-    await this.exigirTarjeta(tarjetaId);
+    const tarjeta = await this.prisma.tarjeta.findUnique({
+      where: { id: tarjetaId },
+      select: { id: true, titulo: true, fechaFin: true },
+    });
+    if (!tarjeta) throw new NotFoundException('Tarjeta no encontrada');
+
+    // Detecta los nuevos asignados para notificarles
+    const previos = await this.prisma.asignacionTarjeta.findMany({
+      where: { tarjetaId },
+      select: { usuarioId: true },
+    });
+    const previosSet = new Set(previos.map((p) => p.usuarioId));
+    const nuevos = usuarioIds.filter((id) => !previosSet.has(id));
+
     // Reemplaza el conjunto completo de asignados
     await this.prisma.$transaction([
       this.prisma.asignacionTarjeta.deleteMany({ where: { tarjetaId } }),
@@ -77,6 +92,14 @@ export class TarjetaDetalleService {
         skipDuplicates: true,
       }),
     ]);
+
+    // Notifica a los recién asignados (con la fecha de fin de la tarjeta)
+    await Promise.all(
+      nuevos.map((usuarioId) =>
+        this.notifications.notificarAsignacion(usuarioId, tarjeta.id, tarjeta.titulo, tarjeta.fechaFin),
+      ),
+    );
+
     return this.prisma.asignacionTarjeta.findMany({
       where: { tarjetaId },
       include: { usuario: autorSelect },

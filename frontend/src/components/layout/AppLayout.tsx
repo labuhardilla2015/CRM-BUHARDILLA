@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { Menu } from 'lucide-react';
 import { Sidebar } from './Sidebar';
+import { NotificationsBell } from '@/components/NotificationsBell';
 import { cn } from '@/lib/cn';
 
 /**
@@ -30,12 +31,15 @@ export function AppLayout() {
 
       {/* Contenido */}
       <div className="flex min-w-0 flex-1 flex-col">
-        {/* Barra superior solo en móvil para abrir el menú */}
-        <header className="flex items-center gap-3 border-b border-slate-200 bg-white px-4 py-3 lg:hidden">
-          <button onClick={() => setMobileOpen(true)} className="text-slate-600">
-            <Menu className="h-6 w-6" />
-          </button>
-          <span className="text-sm font-semibold">La Buhardilla · CRM</span>
+        {/* Barra superior con la campana de notificaciones */}
+        <header className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-2.5">
+          <div className="flex items-center gap-3">
+            <button onClick={() => setMobileOpen(true)} className="text-slate-600 lg:hidden">
+              <Menu className="h-6 w-6" />
+            </button>
+            <span className="text-sm font-semibold lg:hidden">La Buhardilla · CRM</span>
+          </div>
+          <NotificationsBell />
         </header>
 
         <main className={cn('flex-1 overflow-y-auto')}>

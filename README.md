@@ -113,11 +113,11 @@ El rol se asigna **según el email** consultando la tabla `role_emails`:
 |------|--------------------------------|---------------|
 | 0    | Setup monorepo + Docker        | ✅ Completada |
 | 1    | Auth / Roles                   | ✅ Completada |
-| 2    | Reloj (fichaje + cronómetro)   | ⏳ Siguiente  |
-| 3    | Clientes / Tableros Trello     | ⏳            |
-| 4    | Potenciales / Presupuestos     | ⏳            |
-| 5    | Notificaciones (WebSockets)    | ⏳            |
-| 6    | Hardening + deploy             | ⏳            |
+| 2    | Reloj (fichaje + cronómetro + calendario + informes) | ✅ Completada |
+| 3    | Clientes / Tableros Trello (control, tarjetas, claves cifradas) | ✅ Completada |
+| 4    | Potenciales / Presupuestos (embudo + aceptación pública) | ✅ Completada |
+| 5    | Notificaciones en tiempo real (WebSockets) | ✅ Completada |
+| 6    | Hardening + deploy             | ⏳ Pendiente  |
 
 ---
 

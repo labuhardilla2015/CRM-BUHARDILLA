@@ -11,6 +11,7 @@ import { ClientesModule } from './modules/clientes/clientes.module';
 import { TablerosModule } from './modules/tableros/tableros.module';
 import { PotencialesModule } from './modules/potenciales/potenciales.module';
 import { PresupuestosModule } from './modules/presupuestos/presupuestos.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
 import { AppController } from './app.controller';
@@ -30,6 +31,7 @@ import { AppController } from './app.controller';
     TablerosModule,
     PotencialesModule,
     PresupuestosModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [

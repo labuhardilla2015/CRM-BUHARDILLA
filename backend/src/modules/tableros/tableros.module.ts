@@ -4,9 +4,10 @@ import { TablerosController } from './tableros.controller';
 import { TarjetaDetalleService } from './tarjeta-detalle.service';
 import { TarjetaDetalleController } from './tarjeta-detalle.controller';
 import { StorageModule } from '../../common/storage/storage.module';
+import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
-  imports: [StorageModule],
+  imports: [StorageModule, NotificationsModule],
   controllers: [TablerosController, TarjetaDetalleController],
   providers: [TablerosService, TarjetaDetalleService],
   exports: [TablerosService],
