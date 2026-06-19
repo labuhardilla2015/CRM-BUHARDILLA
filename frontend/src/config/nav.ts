@@ -39,6 +39,7 @@ export const NAV_ITEMS: NavItem[] = [
     children: [
       { to: '/reloj/fichaje', label: 'Fichaje' },
       { to: '/reloj/cronometro', label: 'Cronómetro' },
+      { to: '/reloj/calendario', label: 'Calendario' },
       { to: '/reloj/informes', label: 'Informes' },
     ],
   },
