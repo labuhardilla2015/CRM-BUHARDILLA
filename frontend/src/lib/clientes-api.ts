@@ -4,6 +4,8 @@ import type { AccionTiempo } from './registros-api';
 export interface Cliente {
   id: string;
   nombre: string;
+  email: string | null;
+  telefono: string | null;
   contacto: string | null;
   notas: string | null;
   logoRuta: string | null;
@@ -13,6 +15,8 @@ export interface Cliente {
 
 export interface ActualizarCliente {
   nombre?: string;
+  email?: string;
+  telefono?: string;
   contacto?: string;
   notas?: string;
 }

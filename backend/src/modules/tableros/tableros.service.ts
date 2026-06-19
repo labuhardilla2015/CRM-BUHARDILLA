@@ -99,6 +99,9 @@ export class TablerosService {
       throw new BadRequestException('La fecha de fin no puede ser anterior a la de inicio');
     }
 
+    // Si cambia la fecha de fin, se rearman los avisos de vencimiento.
+    const cambiaFin = dto.fechaFin !== undefined && +(fechaFin ?? 0) !== +(tarjeta.fechaFin ?? 0);
+
     return this.prisma.tarjeta.update({
       where: { id },
       data: {
@@ -109,6 +112,7 @@ export class TablerosService {
         orden: dto.orden ?? tarjeta.orden,
         fechaInicio,
         fechaFin,
+        ...(cambiaFin ? { avisoPrevio: false, avisoVencimiento: false } : {}),
       },
       include: incluirTablero,
     });

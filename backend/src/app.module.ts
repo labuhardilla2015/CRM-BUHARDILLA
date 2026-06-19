@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { ScheduleModule } from '@nestjs/schedule';
 import { validateEnv } from './config/env.validation';
 import { PrismaModule } from './prisma/prisma.module';
 import { CryptoModule } from './common/crypto/crypto.module';
@@ -27,6 +28,8 @@ import { AppController } from './app.controller';
     // Límite global por IP. Holgado para una SPA con varios usuarios por IP
     // (websocket, refetches, etc.). El login/registro tiene su propio @Throttle.
     ThrottlerModule.forRoot([{ ttl: 60_000, limit: 2000 }]),
+    // Tareas programadas (avisos de vencimiento de tarjetas)
+    ScheduleModule.forRoot(),
     PrismaModule,
     CryptoModule,
     UsersModule,

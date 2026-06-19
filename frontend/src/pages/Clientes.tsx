@@ -149,7 +149,9 @@ function FichaCliente({ clienteId, esAdmin }: { clienteId: string; esAdmin: bool
           <ClienteLogo id={clienteId} nombre={cliente.data.nombre} logoRuta={cliente.data.logoRuta} className="h-12 w-12 bg-white" />
           <div>
             <h2 className="text-lg font-semibold">{cliente.data.nombre}</h2>
-            {cliente.data.contacto && <p className="text-sm text-slate-300">{cliente.data.contacto}</p>}
+            {(cliente.data.email || cliente.data.telefono) && (
+              <p className="text-sm text-slate-300">{cliente.data.email || cliente.data.telefono}</p>
+            )}
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -168,10 +170,6 @@ function FichaCliente({ clienteId, esAdmin }: { clienteId: string; esAdmin: bool
         </div>
       </div>
 
-      {/* Enlaces de interés, redes sociales y documentos */}
-      <EnlacesCliente clienteId={clienteId} />
-      <DocumentosCliente clienteId={clienteId} />
-
       {/* Vista global de tareas en curso */}
       <GlobalTasks clienteId={clienteId} />
 
@@ -180,8 +178,14 @@ function FichaCliente({ clienteId, esAdmin }: { clienteId: string; esAdmin: bool
 
       {/* Modales */}
       {verInfo && (
-        <Modal title="Información general" onClose={() => setVerInfo(false)}>
-          <InfoCliente cliente={cliente.data} esAdmin={esAdmin} />
+        <Modal title="Información general" maxW="max-w-3xl" onClose={() => setVerInfo(false)}>
+          <div className="space-y-6">
+            <InfoCliente cliente={cliente.data} esAdmin={esAdmin} />
+            <div className="border-t border-slate-100 pt-5">
+              <EnlacesCliente clienteId={clienteId} />
+            </div>
+            <DocumentosCliente clienteId={clienteId} />
+          </div>
         </Modal>
       )}
       {esAdmin && verControl && (
@@ -196,11 +200,12 @@ function FichaCliente({ clienteId, esAdmin }: { clienteId: string; esAdmin: bool
 function InfoCliente({ cliente, esAdmin }: { cliente: Cliente; esAdmin: boolean }) {
   const qc = useQueryClient();
   const [editando, setEditando] = useState(false);
-  const [contacto, setContacto] = useState(cliente.contacto ?? '');
+  const [telefono, setTelefono] = useState(cliente.telefono ?? '');
+  const [email, setEmail] = useState(cliente.email ?? '');
   const [notas, setNotas] = useState(cliente.notas ?? '');
 
   const guardar = useMutation({
-    mutationFn: () => actualizarCliente(cliente.id, { contacto, notas }),
+    mutationFn: () => actualizarCliente(cliente.id, { telefono, email, notas }),
     onSuccess: () => {
       setEditando(false);
       qc.invalidateQueries({ queryKey: ['cliente', cliente.id] });
@@ -219,16 +224,23 @@ function InfoCliente({ cliente, esAdmin }: { cliente: Cliente; esAdmin: boolean 
 
       {editando ? (
         <div className="space-y-3">
-          <div>
-            <label className="mb-1 block text-xs font-medium text-slate-500">Contacto</label>
-            <Input value={contacto} onChange={(e) => setContacto(e.target.value)} placeholder="Email o teléfono" />
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div>
+              <label className="mb-1 block text-xs font-medium text-slate-500">Teléfono(s)</label>
+              <Input value={telefono} onChange={(e) => setTelefono(e.target.value)} placeholder="600 000 000, 91 …" />
+            </div>
+            <div>
+              <label className="mb-1 block text-xs font-medium text-slate-500">Email</label>
+              <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="contacto@cliente.com" />
+            </div>
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-slate-500">Notas</label>
+            <label className="mb-1 block text-xs font-medium text-slate-500">Información</label>
             <textarea
               value={notas}
               onChange={(e) => setNotas(e.target.value)}
-              rows={4}
+              rows={6}
+              placeholder="Descripción general del cliente, contexto, particularidades…"
               className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
             />
           </div>
@@ -243,12 +255,18 @@ function InfoCliente({ cliente, esAdmin }: { cliente: Cliente; esAdmin: boolean 
         </div>
       ) : (
         <dl className="space-y-3 text-sm">
-          <div>
-            <dt className="text-xs font-medium uppercase text-slate-400">Contacto</dt>
-            <dd className="text-slate-700">{cliente.contacto || <span className="text-slate-300">—</span>}</dd>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div>
+              <dt className="text-xs font-medium uppercase text-slate-400">Teléfono(s)</dt>
+              <dd className="text-slate-700">{cliente.telefono || <span className="text-slate-300">—</span>}</dd>
+            </div>
+            <div>
+              <dt className="text-xs font-medium uppercase text-slate-400">Email</dt>
+              <dd className="text-slate-700">{cliente.email || <span className="text-slate-300">—</span>}</dd>
+            </div>
           </div>
           <div>
-            <dt className="text-xs font-medium uppercase text-slate-400">Notas</dt>
+            <dt className="text-xs font-medium uppercase text-slate-400">Información</dt>
             <dd className="whitespace-pre-wrap text-slate-700">{cliente.notas || <span className="text-slate-300">—</span>}</dd>
           </div>
         </dl>

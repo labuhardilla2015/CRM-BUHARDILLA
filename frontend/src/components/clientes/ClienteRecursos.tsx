@@ -22,7 +22,7 @@ export function EnlacesCliente({ clienteId }: { clienteId: string }) {
   const redes = (enlaces.data ?? []).filter((e) => e.tipo === 'RED_SOCIAL');
 
   return (
-    <section className="rounded-xl border border-slate-200 bg-white p-5">
+    <section>
       <div className="grid gap-6 md:grid-cols-2">
         <Bloque titulo="Enlaces de interés" icon={Link2} tipo="ENLACE" items={deInteres} clienteId={clienteId} placeholder="https://drive.google.com/…" />
         <Bloque titulo="Redes sociales" icon={Share2} tipo="RED_SOCIAL" items={redes} clienteId={clienteId} placeholder="https://instagram.com/…" />
@@ -101,7 +101,7 @@ export function DocumentosCliente({ clienteId }: { clienteId: string }) {
   const borrar = useMutation({ mutationFn: (id: string) => eliminarDocumentoCliente(id), onSuccess: refrescar });
 
   return (
-    <section className="rounded-xl border border-slate-200 bg-white p-5">
+    <section>
       <h4 className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-700">
         <FileText className="h-4 w-4 text-brand" /> Documentos
       </h4>

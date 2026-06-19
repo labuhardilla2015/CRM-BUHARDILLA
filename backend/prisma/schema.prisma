@@ -76,6 +76,7 @@ enum TipoNotificacion {
   POTENCIAL
   REUNION
   LIMITE_HORAS
+  VENCIMIENTO_TAREA
 }
 
 /// Usuarios del CRM. El rol se asigna en el registro según la tabla RoleEmail.
@@ -153,7 +154,10 @@ model Notificacion {
 model Cliente {
   id        String   @id @default(uuid())
   nombre    String   @unique @db.VarChar(160)
+  email     String?  @db.VarChar(180)
+  telefono  String?  @db.VarChar(100)
   contacto  String?  @db.VarChar(255)
+  /// Descripción / información general del cliente (texto largo).
   notas     String?  @db.Text
   logoRuta  String?  @map("logo_ruta") @db.VarChar(255)
   /// Datos sensibles cifrados con AES-256-GCM (solo accesibles desde "Control").
@@ -311,6 +315,9 @@ model Tarjeta {
   fechaFin    DateTime?     @map("fecha_fin")
   progreso    Int           @default(0)
   orden       Int           @default(0)
+  /// Avisos de vencimiento ya enviados (para no repetirlos).
+  avisoPrevio       Boolean   @default(false) @map("aviso_previo")
+  avisoVencimiento  Boolean   @default(false) @map("aviso_vencimiento")
   createdAt   DateTime      @default(now()) @map("created_at")
   updatedAt   DateTime      @updatedAt @map("updated_at")
 

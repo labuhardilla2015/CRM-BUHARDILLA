@@ -11,16 +11,29 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
+import { Rol } from '@prisma/client';
 import { TablerosService } from './tableros.service';
+import { VencimientosService } from './vencimientos.service';
 import {
   ActualizarTarjetaDto,
   CrearTarjetaDto,
   TarjetasQueryDto,
 } from './dto/tarjeta.dto';
+import { Roles } from '../../common/decorators/roles.decorator';
 
 @Controller()
 export class TablerosController {
-  constructor(private tableros: TablerosService) {}
+  constructor(
+    private tableros: TablerosService,
+    private vencimientos: VencimientosService,
+  ) {}
+
+  /** Fuerza el proceso de avisos de vencimiento (solo admin; útil para probar). */
+  @Roles(Rol.ADMIN)
+  @Post('tarjetas/procesar-vencimientos')
+  procesarVencimientos() {
+    return this.vencimientos.procesar();
+  }
 
   /** Tableros del cliente con tareas activas (panel de tableros). */
   @Get('clientes/:clienteId/tableros')

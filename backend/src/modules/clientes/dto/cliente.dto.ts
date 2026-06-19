@@ -9,12 +9,22 @@ export class ActualizarClienteDto {
 
   @IsOptional()
   @IsString()
+  @MaxLength(180)
+  email?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  telefono?: string;
+
+  @IsOptional()
+  @IsString()
   @MaxLength(255)
   contacto?: string;
 
   @IsOptional()
   @IsString()
-  @MaxLength(5000)
+  @MaxLength(8000)
   notas?: string;
 }
 

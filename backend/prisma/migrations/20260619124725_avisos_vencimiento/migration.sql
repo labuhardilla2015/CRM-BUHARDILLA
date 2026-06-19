@@ -1,0 +1,6 @@
+-- AlterTable
+ALTER TABLE `notificaciones` MODIFY `tipo` ENUM('TARJETA_ASIGNADA', 'POTENCIAL', 'REUNION', 'LIMITE_HORAS', 'VENCIMIENTO_TAREA') NOT NULL;
+
+-- AlterTable
+ALTER TABLE `tarjetas` ADD COLUMN `aviso_previo` BOOLEAN NOT NULL DEFAULT false,
+    ADD COLUMN `aviso_vencimiento` BOOLEAN NOT NULL DEFAULT false;

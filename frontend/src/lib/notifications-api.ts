@@ -1,6 +1,11 @@
 import { api } from './api';
 
-export type TipoNotificacion = 'TARJETA_ASIGNADA' | 'POTENCIAL' | 'REUNION';
+export type TipoNotificacion =
+  | 'TARJETA_ASIGNADA'
+  | 'POTENCIAL'
+  | 'REUNION'
+  | 'LIMITE_HORAS'
+  | 'VENCIMIENTO_TAREA';
 
 export interface Notificacion {
   id: string;

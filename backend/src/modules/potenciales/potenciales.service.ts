@@ -1,7 +1,9 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
-import { EstadoPotencial, Potencial } from '@prisma/client';
+import { EstadoPotencial, Potencial, Rol, TipoNotificacion } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { ActualizarPotencialDto, CrearPotencialDto } from './dto/potencial.dto';
+import { LeadPublicoDto } from './dto/lead-publico.dto';
 
 const incluirCliente = {
   cliente: { select: { id: true, nombre: true } },
@@ -9,7 +11,41 @@ const incluirCliente = {
 
 @Injectable()
 export class PotencialesService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private notifications: NotificationsService,
+  ) {}
+
+  /** Crea un potencial a partir del formulario de la web y avisa a los admins. */
+  async crearDesdeWeb(dto: LeadPublicoDto): Promise<{ ok: true }> {
+    const notasPartes = [dto.telefono ? `Tel: ${dto.telefono}` : '', dto.mensaje ?? ''].filter(Boolean);
+    const potencial = await this.prisma.potencial.create({
+      data: {
+        nombre: dto.nombre,
+        contacto: dto.email ?? dto.telefono ?? null,
+        origen: 'Web',
+        notas: notasPartes.join('\n') || null,
+        estado: EstadoPotencial.NUEVO,
+      },
+    });
+
+    const admins = await this.prisma.usuario.findMany({
+      where: { rol: Rol.ADMIN, activo: true },
+      select: { id: true },
+    });
+    await Promise.all(
+      admins.map((a) =>
+        this.notifications.crear({
+          usuarioId: a.id,
+          tipo: TipoNotificacion.POTENCIAL,
+          mensaje: `Nuevo potencial desde la web: "${dto.nombre}"`,
+          entidadTipo: 'potencial',
+          entidadId: potencial.id,
+        }),
+      ),
+    );
+    return { ok: true };
+  }
 
   listar() {
     return this.prisma.potencial.findMany({
@@ -57,6 +93,7 @@ export class PotencialesService {
     const cliente = await this.prisma.cliente.create({
       data: {
         nombre: potencial.nombre,
+        email: potencial.contacto,
         contacto: potencial.contacto,
         notas: potencial.notas,
       },
