@@ -22,6 +22,7 @@ const trabajadorSelect = {
   puesto: true,
   enPracticas: true,
   contratoNombre: true,
+  fotoRuta: true,
   createdAt: true,
 } satisfies Prisma.UsuarioSelect;
 
@@ -111,6 +112,58 @@ export class TrabajadoresService {
     const u = await this.exigir(id);
     if (!u.contratoRuta) throw new NotFoundException('Este trabajador no tiene contrato adjunto');
     return { absPath: this.storage.absolutePath(u.contratoRuta), nombre: u.contratoNombre ?? 'contrato' };
+  }
+
+  // ─── Foto ──────────────────────────────────────────────────────────
+  async subirFoto(id: string, file: { buffer: Buffer; originalname: string }) {
+    const u = await this.exigir(id);
+    if (u.fotoRuta) this.storage.remove(u.fotoRuta);
+    const { ruta } = this.storage.save(file.buffer, file.originalname);
+    return this.prisma.usuario.update({ where: { id }, data: { fotoRuta: ruta }, select: trabajadorSelect });
+  }
+
+  async fotoParaServir(id: string) {
+    const u = await this.exigir(id);
+    if (!u.fotoRuta) throw new NotFoundException('Este trabajador no tiene foto');
+    return { absPath: this.storage.absolutePath(u.fotoRuta) };
+  }
+
+  // ─── Documentos del expediente ─────────────────────────────────────
+  listarDocumentos(usuarioId: string) {
+    return this.prisma.documentoEmpleado.findMany({
+      where: { usuarioId },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async subirDocumento(
+    usuarioId: string,
+    file: { buffer: Buffer; originalname: string; mimetype: string },
+  ) {
+    await this.exigir(usuarioId);
+    const { ruta, tamano } = this.storage.save(file.buffer, file.originalname);
+    return this.prisma.documentoEmpleado.create({
+      data: {
+        usuarioId,
+        nombre: file.originalname.slice(0, 255),
+        ruta,
+        mime: file.mimetype.slice(0, 120),
+        tamano,
+      },
+    });
+  }
+
+  async documentoParaDescarga(usuarioId: string, docId: string) {
+    const d = await this.prisma.documentoEmpleado.findUnique({ where: { id: docId } });
+    if (!d || d.usuarioId !== usuarioId) throw new NotFoundException('Documento no encontrado');
+    return { absPath: this.storage.absolutePath(d.ruta), nombre: d.nombre };
+  }
+
+  async eliminarDocumento(usuarioId: string, docId: string) {
+    const d = await this.prisma.documentoEmpleado.findUnique({ where: { id: docId } });
+    if (!d || d.usuarioId !== usuarioId) throw new NotFoundException('Documento no encontrado');
+    await this.prisma.documentoEmpleado.delete({ where: { id: docId } });
+    this.storage.remove(d.ruta);
   }
 
   private async exigir(id: string) {

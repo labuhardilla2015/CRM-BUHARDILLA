@@ -1,16 +1,16 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { UserPlus, X, GraduationCap } from 'lucide-react';
 import {
-  crearTrabajador, getTrabajadores, type Rol, type Trabajador,
+  crearTrabajador, getTrabajadores, type Rol,
 } from '@/lib/trabajadores-api';
 import { errorMessage } from '@/lib/auth-api';
 import { PageHeader } from '@/components/PageHeader';
 import { Button, Input, Select } from '@/components/ui';
-import { TrabajadorModal } from '@/components/trabajadores/TrabajadorModal';
 
 export function Trabajadores() {
-  const [abierto, setAbierto] = useState<Trabajador | null>(null);
+  const navigate = useNavigate();
   const [creando, setCreando] = useState(false);
   const trabajadores = useQuery({ queryKey: ['trabajadores'], queryFn: getTrabajadores });
 
@@ -36,7 +36,7 @@ export function Trabajadores() {
           </thead>
           <tbody className="divide-y divide-slate-100">
             {trabajadores.data?.map((t) => (
-              <tr key={t.id} onClick={() => setAbierto(t)} className="cursor-pointer hover:bg-slate-50">
+              <tr key={t.id} onClick={() => navigate(`/trabajadores/${t.id}`)} className="cursor-pointer hover:bg-slate-50">
                 <td className="px-4 py-2.5 font-medium text-slate-800">
                   <div className="flex items-center gap-2">
                     <span className="grid h-7 w-7 place-items-center rounded-full bg-brand text-xs font-semibold text-white">
@@ -71,7 +71,6 @@ export function Trabajadores() {
         </table>
       </div>
 
-      {abierto && <TrabajadorModal trabajador={abierto} onClose={() => setAbierto(null)} />}
       {creando && <NuevoTrabajadorModal onClose={() => setCreando(false)} />}
     </div>
   );

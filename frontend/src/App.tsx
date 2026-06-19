@@ -14,6 +14,7 @@ import { Cronometro } from '@/pages/reloj/Cronometro';
 import { Informes } from '@/pages/reloj/Informes';
 import { Potenciales } from '@/pages/Potenciales';
 import { Trabajadores } from '@/pages/Trabajadores';
+import { TrabajadorPerfil } from '@/pages/TrabajadorPerfil';
 import { PresupuestoPublico } from '@/pages/PresupuestoPublico';
 
 export default function App() {
@@ -54,6 +55,7 @@ export default function App() {
             <Route element={<ProtectedRoute roles={['ADMIN']} />}>
               <Route path="/potenciales" element={<Potenciales />} />
               <Route path="/trabajadores" element={<Trabajadores />} />
+              <Route path="/trabajadores/:id" element={<TrabajadorPerfil />} />
             </Route>
           </Route>
         </Route>

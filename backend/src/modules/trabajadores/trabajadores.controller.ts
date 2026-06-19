@@ -72,4 +72,50 @@ export class TrabajadoresController {
     const c = await this.trabajadores.contratoParaDescarga(id);
     res.download(c.absPath, c.nombre);
   }
+
+  // ─── Foto ──────────────────────────────────────────────────────────
+  @Post(':id/foto')
+  @UseInterceptors(FileInterceptor('file', { limits: { fileSize: MAX_CONTRATO } }))
+  subirFoto(@Param('id', ParseUUIDPipe) id: string, @UploadedFile() file: Express.Multer.File) {
+    if (!file) throw new BadRequestException('Falta la imagen');
+    return this.trabajadores.subirFoto(id, file);
+  }
+
+  @Get(':id/foto')
+  async verFoto(@Param('id', ParseUUIDPipe) id: string, @Res() res: Response) {
+    const f = await this.trabajadores.fotoParaServir(id);
+    res.sendFile(f.absPath);
+  }
+
+  // ─── Documentos del expediente ─────────────────────────────────────
+  @Get(':id/documentos')
+  documentos(@Param('id', ParseUUIDPipe) id: string) {
+    return this.trabajadores.listarDocumentos(id);
+  }
+
+  @Post(':id/documentos')
+  @UseInterceptors(FileInterceptor('file', { limits: { fileSize: MAX_CONTRATO } }))
+  subirDoc(@Param('id', ParseUUIDPipe) id: string, @UploadedFile() file: Express.Multer.File) {
+    if (!file) throw new BadRequestException('Falta el archivo');
+    return this.trabajadores.subirDocumento(id, file);
+  }
+
+  @Get(':id/documentos/:docId/download')
+  async descargarDoc(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('docId', ParseUUIDPipe) docId: string,
+    @Res() res: Response,
+  ) {
+    const d = await this.trabajadores.documentoParaDescarga(id, docId);
+    res.download(d.absPath, d.nombre);
+  }
+
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @Delete(':id/documentos/:docId')
+  borrarDoc(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('docId', ParseUUIDPipe) docId: string,
+  ) {
+    return this.trabajadores.eliminarDocumento(id, docId);
+  }
 }
