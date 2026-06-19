@@ -30,10 +30,11 @@ export function ControlPanel({ clienteId }: { clienteId: string }) {
     return (
       <section className="rounded-xl border border-slate-200 bg-white p-5">
         <h3 className="mb-1 flex items-center gap-2 text-sm font-semibold text-slate-800">
-          <Lock className="h-4 w-4 text-brand" /> Control
+          <Lock className="h-4 w-4 text-brand" /> Control · datos sensibles y claves
         </h3>
         <p className="mb-4 text-sm text-slate-500">
-          Zona protegida. Introduce la contraseña de Control para acceder a los datos sensibles.
+          Zona protegida (solo admins). Introduce la contraseña de Control para ver los datos
+          sensibles y la <strong>hoja de claves y servidores</strong> del cliente.
         </p>
         <form
           onSubmit={(e) => { e.preventDefault(); if (password) unlock.mutate(); }}

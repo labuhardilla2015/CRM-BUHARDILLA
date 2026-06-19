@@ -113,8 +113,10 @@ function FichaCliente({ clienteId, esAdmin }: { clienteId: string; esAdmin: bool
 
       <div className="grid gap-6 lg:grid-cols-2">
         <InfoCliente cliente={cliente.data} esAdmin={esAdmin} />
-        {esAdmin && <ControlPanel clienteId={clienteId} />}
       </div>
+
+      {/* Control a todo el ancho (datos sensibles + hoja de claves) */}
+      {esAdmin && <ControlPanel clienteId={clienteId} />}
 
       {/* Vista global de tareas en curso */}
       <GlobalTasks clienteId={clienteId} />
