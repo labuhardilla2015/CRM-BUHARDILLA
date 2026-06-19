@@ -15,6 +15,8 @@ export interface Trabajador {
   contratoNombre: string | null;
   fotoRuta: string | null;
   createdAt: string;
+  /** Mensaje sobre la creación del buzón de email (si cPanel está activo). */
+  emailAviso?: string;
 }
 
 export interface DocumentoEmpleado {

@@ -8,6 +8,7 @@ import { Prisma } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
 import { PrismaService } from '../../prisma/prisma.service';
 import { StorageService } from '../../common/storage/storage.service';
+import { MailProvisioningService } from './mail-provisioning.service';
 import { ActualizarTrabajadorDto, CrearTrabajadorDto } from './dto/trabajador.dto';
 
 /** Campos públicos del trabajador (nunca el hash de la contraseña). */
@@ -31,6 +32,7 @@ export class TrabajadoresService {
   constructor(
     private prisma: PrismaService,
     private storage: StorageService,
+    private mail: MailProvisioningService,
   ) {}
 
   listar() {
@@ -52,7 +54,7 @@ export class TrabajadoresService {
     if (existe) throw new ConflictException('Ya existe un usuario con ese email');
 
     const passwordHash = await bcrypt.hash(dto.password, 12);
-    return this.prisma.usuario.create({
+    const usuario = await this.prisma.usuario.create({
       data: {
         nombre: dto.nombre,
         email: dto.email.toLowerCase(),
@@ -65,6 +67,18 @@ export class TrabajadoresService {
       },
       select: trabajadorSelect,
     });
+
+    // Provisiona el buzón de empresa (cPanel) con el mismo email y contraseña.
+    // No bloquea: si falla, la cuenta del CRM ya está creada.
+    let emailAviso: string | undefined;
+    if (this.mail.habilitado) {
+      const r = await this.mail.crearBuzon(dto.email, dto.password);
+      emailAviso = r.ok
+        ? `Buzón de email ${dto.email.toLowerCase()} creado en el servidor.`
+        : `La cuenta se creó, pero el buzón de email no se pudo crear: ${r.error}`;
+    }
+
+    return { ...usuario, emailAviso };
   }
 
   async actualizar(id: string, dto: ActualizarTrabajadorDto) {

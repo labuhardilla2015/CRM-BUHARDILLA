@@ -88,12 +88,17 @@ function NuevoTrabajadorModal({ onClose }: { onClose: () => void }) {
   const [enPracticas, setEnPracticas] = useState(false);
   const [error, setError] = useState('');
 
+  const [aviso, setAviso] = useState('');
   const crear = useMutation({
     mutationFn: () => crearTrabajador({
       nombre: nombre.trim(), email: email.trim(), password, rol,
       dni: dni || undefined, telefono: telefono || undefined, puesto: puesto || undefined, enPracticas,
     }),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['trabajadores'] }); onClose(); },
+    onSuccess: (data) => {
+      qc.invalidateQueries({ queryKey: ['trabajadores'] });
+      if (data.emailAviso) setAviso(data.emailAviso);
+      else onClose();
+    },
     onError: (e) => setError(errorMessage(e)),
   });
 
@@ -146,12 +151,15 @@ function NuevoTrabajadorModal({ onClose }: { onClose: () => void }) {
         </div>
 
         {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
+        {aviso && <p className="mt-3 rounded-lg bg-slate-50 p-2 text-sm text-slate-600">{aviso}</p>}
 
         <div className="mt-6 flex justify-end gap-2">
-          <Button variant="ghost" onClick={onClose}>Cancelar</Button>
-          <Button onClick={() => valido && crear.mutate()} disabled={crear.isPending || !valido}>
-            <UserPlus className="mr-1 h-4 w-4" /> Crear cuenta
-          </Button>
+          <Button variant="ghost" onClick={onClose}>{aviso ? 'Cerrar' : 'Cancelar'}</Button>
+          {!aviso && (
+            <Button onClick={() => valido && crear.mutate()} disabled={crear.isPending || !valido}>
+              <UserPlus className="mr-1 h-4 w-4" /> Crear cuenta
+            </Button>
+          )}
         </div>
       </div>
     </div>
