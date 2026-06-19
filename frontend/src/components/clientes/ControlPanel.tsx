@@ -8,6 +8,7 @@ import {
 } from '@/lib/clientes-api';
 import { errorMessage } from '@/lib/auth-api';
 import { Button, Input } from '@/components/ui';
+import { ClavesSheet } from './ClavesSheet';
 
 /**
  * Apartado "Control" del cliente (solo admins). Pide la contraseña de Control,
@@ -97,6 +98,9 @@ function DatosSensibles({ clienteId, controlToken }: { clienteId: string; contro
         </Button>
         {guardadoOk && <span className="text-sm text-emerald-600">Guardado ✓</span>}
       </div>
+
+      {/* Hoja de claves (claves y servidores) */}
+      <ClavesSheet clienteId={clienteId} controlToken={controlToken} />
     </section>
   );
 }

@@ -46,6 +46,11 @@ enum EstadoTarjeta {
   HECHO
 }
 
+enum SeccionClave {
+  CLAVE
+  SERVIDOR
+}
+
 /// Usuarios del CRM. El rol se asigna en el registro según la tabla RoleEmail.
 model Usuario {
   id           String   @id @default(uuid())
@@ -82,8 +87,31 @@ model Cliente {
 
   registrosTiempo RegistroTiempo[]
   tableros        Tablero[]
+  claves          ClaveCliente[]
 
   @@map("clientes")
+}
+
+/// Hoja de claves del cliente (tipo Excel), separada por claves y servidores.
+/// Los campos `usuario`, `secreto` y `notas` van cifrados (AES-256-GCM) y solo
+/// son accesibles desde "Control" (admin + token de control).
+model ClaveCliente {
+  id        String       @id @default(uuid())
+  clienteId String       @map("cliente_id")
+  seccion   SeccionClave
+  etiqueta  String       @db.VarChar(200)
+  url       String?      @db.VarChar(500)
+  usuario   String?      @db.Text
+  secreto   String?      @db.Text
+  notas     String?      @db.Text
+  orden     Int          @default(0)
+  createdAt DateTime     @default(now()) @map("created_at")
+  updatedAt DateTime     @updatedAt @map("updated_at")
+
+  cliente Cliente @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+
+  @@index([clienteId, seccion])
+  @@map("claves_cliente")
 }
 
 /// Tablero tipo Trello de un cliente. Un tablero por tipo y cliente.

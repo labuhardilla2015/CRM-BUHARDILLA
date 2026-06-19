@@ -4,11 +4,13 @@ import { ClientesService } from './clientes.service';
 import { ClientesController } from './clientes.controller';
 import { ControlService } from './control.service';
 import { ControlGuard } from './control.guard';
+import { ClavesService } from './claves.service';
+import { ClavesController } from './claves.controller';
 
 @Module({
   imports: [JwtModule.register({})],
-  controllers: [ClientesController],
-  providers: [ClientesService, ControlService, ControlGuard],
+  controllers: [ClientesController, ClavesController],
+  providers: [ClientesService, ControlService, ControlGuard, ClavesService],
   exports: [ClientesService],
 })
 export class ClientesModule {}

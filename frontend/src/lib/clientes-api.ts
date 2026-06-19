@@ -62,3 +62,52 @@ export async function setDatosSensibles(
     { headers: { 'X-Control-Token': controlToken } },
   );
 }
+
+// ─── Hoja de claves (cifrada, bajo Control) ──────────────────────────
+export type SeccionClave = 'CLAVE' | 'SERVIDOR';
+
+export interface Clave {
+  id: string;
+  seccion: SeccionClave;
+  etiqueta: string;
+  url: string | null;
+  usuario: string | null;
+  secreto: string | null;
+  notas: string | null;
+  orden: number;
+}
+
+export interface ClaveInput {
+  seccion?: SeccionClave;
+  etiqueta?: string;
+  url?: string;
+  usuario?: string;
+  secreto?: string;
+  notas?: string;
+}
+
+const ctrl = (controlToken: string) => ({ headers: { 'X-Control-Token': controlToken } });
+
+export async function getClaves(id: string, controlToken: string): Promise<Clave[]> {
+  const { data } = await api.get<Clave[]>(`/clientes/${id}/claves`, ctrl(controlToken));
+  return data;
+}
+
+export async function crearClave(id: string, controlToken: string, body: ClaveInput): Promise<Clave> {
+  const { data } = await api.post<Clave>(`/clientes/${id}/claves`, body, ctrl(controlToken));
+  return data;
+}
+
+export async function actualizarClave(
+  id: string,
+  controlToken: string,
+  claveId: string,
+  body: ClaveInput,
+): Promise<Clave> {
+  const { data } = await api.patch<Clave>(`/clientes/${id}/claves/${claveId}`, body, ctrl(controlToken));
+  return data;
+}
+
+export async function eliminarClave(id: string, controlToken: string, claveId: string): Promise<void> {
+  await api.delete(`/clientes/${id}/claves/${claveId}`, ctrl(controlToken));
+}
