@@ -80,6 +80,15 @@ model Usuario {
   passwordHash String   @map("password_hash") @db.VarChar(255)
   rol          Rol      @default(TRABAJADOR)
   activo       Boolean  @default(true)
+
+  // Ficha de empleado (gestionada por el administrador)
+  dni            String?  @db.VarChar(20)
+  telefono       String?  @db.VarChar(30)
+  puesto         String?  @db.VarChar(120)
+  enPracticas    Boolean  @default(false) @map("en_practicas")
+  contratoRuta   String?  @map("contrato_ruta") @db.VarChar(255)
+  contratoNombre String?  @map("contrato_nombre") @db.VarChar(255)
+
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
