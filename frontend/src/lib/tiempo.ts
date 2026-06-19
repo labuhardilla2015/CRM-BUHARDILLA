@@ -60,6 +60,23 @@ export function inicioHoy(): Date {
   return d;
 }
 
+/** Rango [desde, hasta) del periodo indicado respecto a hoy. */
+export function rangoPeriodo(periodo: 'semana' | 'mes' | 'ano'): { desde: string; hasta: string } {
+  const ahora = new Date();
+  if (periodo === 'semana') {
+    const lunes = inicioSemana(ahora);
+    return { desde: lunes.toISOString(), hasta: sumarDias(lunes, 7).toISOString() };
+  }
+  if (periodo === 'mes') {
+    const ini = new Date(ahora.getFullYear(), ahora.getMonth(), 1);
+    const fin = new Date(ahora.getFullYear(), ahora.getMonth() + 1, 1);
+    return { desde: ini.toISOString(), hasta: fin.toISOString() };
+  }
+  const ini = new Date(ahora.getFullYear(), 0, 1);
+  const fin = new Date(ahora.getFullYear() + 1, 0, 1);
+  return { desde: ini.toISOString(), hasta: fin.toISOString() };
+}
+
 /** ISO → valor para <input type="datetime-local"> (hora local). */
 export function toLocalInput(iso: string): string {
   const d = new Date(iso);

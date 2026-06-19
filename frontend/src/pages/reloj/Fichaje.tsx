@@ -13,6 +13,7 @@ import { duracionSeg, formatDuracion, formatFecha, formatHora } from '@/lib/tiem
 import { useAuth } from '@/store/auth';
 import { PageHeader } from '@/components/PageHeader';
 import { Button } from '@/components/ui';
+import { FichajesPorTrabajador } from '@/components/reloj/FichajesPorTrabajador';
 
 const MAX_DIA = 2;
 
@@ -29,7 +30,7 @@ export function Fichaje() {
   const [error, setError] = useState('');
 
   const estado = useQuery({ queryKey: ['fichaje-estado'], queryFn: getEstadoFichaje });
-  const historial = useQuery({ queryKey: ['fichaje-historial'], queryFn: getHistorialFichajes });
+  const historial = useQuery({ queryKey: ['fichaje-historial'], queryFn: () => getHistorialFichajes() });
 
   const refrescar = () => {
     qc.invalidateQueries({ queryKey: ['fichaje-estado'] });
@@ -151,6 +152,9 @@ export function Fichaje() {
           </tbody>
         </table>
       </div>
+
+      {/* Filtro de fichajes por trabajador y periodo (solo admin) */}
+      {esAdmin && <FichajesPorTrabajador />}
     </div>
   );
 }

@@ -26,7 +26,11 @@ export async function ficharSalida(): Promise<Fichaje> {
   return data;
 }
 
-export async function getHistorialFichajes(): Promise<Fichaje[]> {
-  const { data } = await api.get<Fichaje[]>('/clock/fichajes');
+export async function getHistorialFichajes(params?: {
+  usuarioId?: string;
+  desde?: string;
+  hasta?: string;
+}): Promise<Fichaje[]> {
+  const { data } = await api.get<Fichaje[]>('/clock/fichajes', { params });
   return data;
 }
