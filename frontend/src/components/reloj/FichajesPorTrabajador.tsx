@@ -1,10 +1,13 @@
 import { useMemo, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { Users2 } from 'lucide-react';
-import { getHistorialFichajes } from '@/lib/clock-api';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Users2, Pencil, Check, X } from 'lucide-react';
+import { editarFichaje, getHistorialFichajes, type Fichaje } from '@/lib/clock-api';
 import { getTrabajadores } from '@/lib/trabajadores-api';
-import { duracionSeg, formatDuracion, formatFecha, formatHoras, formatHora, rangoPeriodo } from '@/lib/tiempo';
-import { Select } from '@/components/ui';
+import {
+  duracionSeg, formatDuracion, formatFecha, formatHoras, formatHora,
+  fromLocalInput, rangoPeriodo, toLocalInput,
+} from '@/lib/tiempo';
+import { Input, Select } from '@/components/ui';
 
 type Periodo = 'semana' | 'mes' | 'ano';
 
@@ -15,6 +18,7 @@ export function FichajesPorTrabajador() {
   const [usuarioId, setUsuarioId] = useState('');
   const [periodo, setPeriodo] = useState<Periodo>('semana');
 
+  const qc = useQueryClient();
   const trabajadores = useQuery({ queryKey: ['trabajadores'], queryFn: getTrabajadores });
   const { desde, hasta } = rangoPeriodo(periodo);
 
@@ -23,6 +27,7 @@ export function FichajesPorTrabajador() {
     queryFn: () => getHistorialFichajes({ usuarioId, desde, hasta }),
     enabled: !!usuarioId,
   });
+  const refrescar = () => qc.invalidateQueries({ queryKey: ['fichajes-admin'] });
 
   const total = useMemo(
     () => (fichajes.data ?? []).reduce((a, f) => a + (f.fin ? duracionSeg(f.inicio, f.fin) : 0), 0),
@@ -70,22 +75,14 @@ export function FichajesPorTrabajador() {
                 <th className="px-4 py-2 font-medium">Entrada</th>
                 <th className="px-4 py-2 font-medium">Salida</th>
                 <th className="px-4 py-2 font-medium">Duración</th>
+                <th className="px-4 py-2 font-medium"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {fichajes.data?.length ? (
-                fichajes.data.map((f) => (
-                  <tr key={f.id} className="text-slate-700">
-                    <td className="px-4 py-2 capitalize">{formatFecha(f.inicio)}</td>
-                    <td className="px-4 py-2 tabular-nums">{formatHora(f.inicio)}</td>
-                    <td className="px-4 py-2 tabular-nums">{f.fin ? formatHora(f.fin) : '—'}</td>
-                    <td className="px-4 py-2 tabular-nums">
-                      {f.fin ? formatDuracion(duracionSeg(f.inicio, f.fin)) : <span className="text-brand">En curso</span>}
-                    </td>
-                  </tr>
-                ))
+                fichajes.data.map((f) => <FilaFichaje key={f.id} f={f} onChange={refrescar} />)
               ) : (
-                <tr><td colSpan={4} className="px-4 py-6 text-center text-slate-400">
+                <tr><td colSpan={5} className="px-4 py-6 text-center text-slate-400">
                   {fichajes.isLoading ? 'Cargando…' : 'Sin fichajes en este periodo.'}
                 </td></tr>
               )}
@@ -94,5 +91,52 @@ export function FichajesPorTrabajador() {
         </div>
       )}
     </section>
+  );
+}
+
+function FilaFichaje({ f, onChange }: { f: Fichaje; onChange: () => void }) {
+  const [editando, setEditando] = useState(false);
+  const [inicio, setInicio] = useState(toLocalInput(f.inicio));
+  const [fin, setFin] = useState(f.fin ? toLocalInput(f.fin) : '');
+
+  const guardar = useMutation({
+    mutationFn: () =>
+      editarFichaje(f.id, {
+        inicio: fromLocalInput(inicio),
+        ...(fin ? { fin: fromLocalInput(fin) } : {}),
+      }),
+    onSuccess: () => { setEditando(false); onChange(); },
+  });
+
+  if (editando) {
+    return (
+      <tr className="bg-amber-50/50 text-slate-700">
+        <td className="px-4 py-2 capitalize">{formatFecha(f.inicio)}</td>
+        <td className="px-2 py-1.5"><Input type="datetime-local" value={inicio} onChange={(e) => setInicio(e.target.value)} /></td>
+        <td className="px-2 py-1.5"><Input type="datetime-local" value={fin} onChange={(e) => setFin(e.target.value)} /></td>
+        <td className="px-4 py-2 text-slate-400">—</td>
+        <td className="whitespace-nowrap px-4 py-2">
+          <button onClick={() => guardar.mutate()} className="text-emerald-600 hover:text-emerald-700" title="Guardar"><Check className="h-4 w-4" /></button>
+          <button onClick={() => setEditando(false)} className="ml-2 text-slate-400 hover:text-slate-600" title="Cancelar"><X className="h-4 w-4" /></button>
+        </td>
+      </tr>
+    );
+  }
+
+  return (
+    <tr className="text-slate-700">
+      <td className="px-4 py-2 capitalize">{formatFecha(f.inicio)}</td>
+      <td className="px-4 py-2 tabular-nums">{formatHora(f.inicio)}</td>
+      <td className="px-4 py-2 tabular-nums">{f.fin ? formatHora(f.fin) : '—'}</td>
+      <td className="px-4 py-2 tabular-nums">
+        {f.fin ? formatDuracion(duracionSeg(f.inicio, f.fin)) : <span className="text-brand">En curso</span>}
+        {f.editadoAt && <span className="ml-1 text-xs text-amber-500" title="Editado por un admin">✎</span>}
+      </td>
+      <td className="px-4 py-2 text-right">
+        <button onClick={() => setEditando(true)} className="text-slate-400 hover:text-brand" title="Editar horario">
+          <Pencil className="h-4 w-4" />
+        </button>
+      </td>
+    </tr>
   );
 }

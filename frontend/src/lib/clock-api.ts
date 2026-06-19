@@ -34,3 +34,12 @@ export async function getHistorialFichajes(params?: {
   const { data } = await api.get<Fichaje[]>('/clock/fichajes', { params });
   return data;
 }
+
+/** Editar las marcas de un fichaje (solo admin). */
+export async function editarFichaje(
+  id: string,
+  body: { inicio?: string; fin?: string },
+): Promise<Fichaje> {
+  const { data } = await api.patch<Fichaje>(`/clock/fichajes/${id}`, body);
+  return data;
+}
