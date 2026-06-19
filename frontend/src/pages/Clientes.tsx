@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Plus, Building2, Pencil, Save, X } from 'lucide-react';
+import { Plus, Building2, Pencil, Save, X, KeyRound } from 'lucide-react';
 import {
   actualizarCliente,
   crearCliente,
@@ -14,6 +14,8 @@ import { PageHeader } from '@/components/PageHeader';
 import { ControlPanel } from '@/components/clientes/ControlPanel';
 import { BoardPanel } from '@/components/clientes/BoardPanel';
 import { GlobalTasks } from '@/components/clientes/GlobalTasks';
+import { ClavesModal } from '@/components/clientes/ClavesModal';
+import { EnlacesCliente, DocumentosCliente } from '@/components/clientes/ClienteRecursos';
 import { Button, Input, Select } from '@/components/ui';
 
 export function Clientes() {
@@ -92,6 +94,7 @@ export function Clientes() {
 }
 
 function FichaCliente({ clienteId, esAdmin }: { clienteId: string; esAdmin: boolean }) {
+  const [verClaves, setVerClaves] = useState(false);
   const cliente = useQuery({ queryKey: ['cliente', clienteId], queryFn: () => getCliente(clienteId) });
 
   if (cliente.isLoading || !cliente.data) {
@@ -100,22 +103,34 @@ function FichaCliente({ clienteId, esAdmin }: { clienteId: string; esAdmin: bool
 
   return (
     <div className="space-y-6">
-      {/* Cabecera de la ficha */}
-      <div className="flex items-center gap-3 rounded-xl bg-sidebar px-5 py-4 text-white">
-        <div className="grid h-11 w-11 place-items-center rounded-lg bg-brand text-lg font-semibold">
-          {cliente.data.nombre.charAt(0).toUpperCase()}
+      {/* Cabecera de la ficha + acceso rápido a claves */}
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-sidebar px-5 py-4 text-white">
+        <div className="flex items-center gap-3">
+          <div className="grid h-11 w-11 place-items-center rounded-lg bg-brand text-lg font-semibold">
+            {cliente.data.nombre.charAt(0).toUpperCase()}
+          </div>
+          <div>
+            <h2 className="text-lg font-semibold">{cliente.data.nombre}</h2>
+            {cliente.data.contacto && <p className="text-sm text-slate-300">{cliente.data.contacto}</p>}
+          </div>
         </div>
-        <div>
-          <h2 className="text-lg font-semibold">{cliente.data.nombre}</h2>
-          {cliente.data.contacto && <p className="text-sm text-slate-300">{cliente.data.contacto}</p>}
-        </div>
+        <button
+          onClick={() => setVerClaves(true)}
+          className="flex items-center gap-2 rounded-lg bg-brand px-4 py-2 text-sm font-medium text-white transition hover:bg-brand-dark"
+        >
+          <KeyRound className="h-4 w-4" /> Claves de acceso
+        </button>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
         <InfoCliente cliente={cliente.data} esAdmin={esAdmin} />
       </div>
 
-      {/* Control a todo el ancho (datos sensibles + hoja de claves) */}
+      {/* Enlaces de interés, redes sociales y documentos */}
+      <EnlacesCliente clienteId={clienteId} />
+      <DocumentosCliente clienteId={clienteId} />
+
+      {/* Control (datos sensibles, solo admin) */}
       {esAdmin && <ControlPanel clienteId={clienteId} />}
 
       {/* Vista global de tareas en curso */}
@@ -123,6 +138,8 @@ function FichaCliente({ clienteId, esAdmin }: { clienteId: string; esAdmin: bool
 
       {/* Tableros tipo Trello */}
       <BoardPanel clienteId={clienteId} />
+
+      {verClaves && <ClavesModal clienteId={clienteId} onClose={() => setVerClaves(false)} />}
     </div>
   );
 }

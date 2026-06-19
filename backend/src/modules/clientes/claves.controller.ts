@@ -9,20 +9,14 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
-  UseGuards,
 } from '@nestjs/common';
-import { Rol } from '@prisma/client';
 import { ClavesService } from './claves.service';
-import { ControlGuard } from './control.guard';
 import { ActualizarClaveDto, CrearClaveDto } from './dto/clave.dto';
-import { Roles } from '../../common/decorators/roles.decorator';
 
 /**
- * Hoja de claves del cliente. Toda la ruta exige ser ADMIN y presentar un
- * token de Control válido (X-Control-Token) acotado al cliente (:id).
+ * Hoja de claves del cliente. Accesible a cualquier empleado autenticado
+ * (se usa a diario). Los secretos van cifrados en la base de datos.
  */
-@Roles(Rol.ADMIN)
-@UseGuards(ControlGuard)
 @Controller('clientes/:id/claves')
 export class ClavesController {
   constructor(private claves: ClavesService) {}

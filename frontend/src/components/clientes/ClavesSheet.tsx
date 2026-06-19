@@ -13,10 +13,10 @@ import {
 import { Input } from '@/components/ui';
 
 /** Hoja de claves del cliente, separada en Claves y Servidores. */
-export function ClavesSheet({ clienteId, controlToken }: { clienteId: string; controlToken: string }) {
+export function ClavesSheet({ clienteId }: { clienteId: string }) {
   const claves = useQuery({
     queryKey: ['claves', clienteId],
-    queryFn: () => getClaves(clienteId, controlToken),
+    queryFn: () => getClaves(clienteId),
   });
 
   const { porSeccion } = useMemo(() => {
@@ -26,23 +26,9 @@ export function ClavesSheet({ clienteId, controlToken }: { clienteId: string; co
   }, [claves.data]);
 
   return (
-    <div className="mt-6 space-y-6 border-t border-emerald-100 pt-5">
-      <Seccion
-        titulo="Claves"
-        icon={KeyRound}
-        seccion="CLAVE"
-        items={porSeccion.CLAVE}
-        clienteId={clienteId}
-        controlToken={controlToken}
-      />
-      <Seccion
-        titulo="Servidores"
-        icon={Server}
-        seccion="SERVIDOR"
-        items={porSeccion.SERVIDOR}
-        clienteId={clienteId}
-        controlToken={controlToken}
-      />
+    <div className="space-y-6">
+      <Seccion titulo="Claves" icon={KeyRound} seccion="CLAVE" items={porSeccion.CLAVE} clienteId={clienteId} />
+      <Seccion titulo="Servidores" icon={Server} seccion="SERVIDOR" items={porSeccion.SERVIDOR} clienteId={clienteId} />
     </div>
   );
 }
@@ -53,14 +39,12 @@ function Seccion({
   seccion,
   items,
   clienteId,
-  controlToken,
 }: {
   titulo: string;
   icon: typeof KeyRound;
   seccion: SeccionClave;
   items: Clave[];
   clienteId: string;
-  controlToken: string;
 }) {
   const qc = useQueryClient();
   const [añadiendo, setAñadiendo] = useState(false);
@@ -90,13 +74,12 @@ function Seccion({
           </thead>
           <tbody className="divide-y divide-slate-100">
             {items.map((c) => (
-              <ClaveRow key={c.id} clave={c} clienteId={clienteId} controlToken={controlToken} onChange={refrescar} />
+              <ClaveRow key={c.id} clave={c} clienteId={clienteId} onChange={refrescar} />
             ))}
             {añadiendo && (
               <FilaNueva
                 seccion={seccion}
                 clienteId={clienteId}
-                controlToken={controlToken}
                 onDone={() => { setAñadiendo(false); refrescar(); }}
               />
             )}
@@ -113,12 +96,10 @@ function Seccion({
 function ClaveRow({
   clave,
   clienteId,
-  controlToken,
   onChange,
 }: {
   clave: Clave;
   clienteId: string;
-  controlToken: string;
   onChange: () => void;
 }) {
   const qc = useQueryClient();
@@ -132,11 +113,11 @@ function ClaveRow({
   });
 
   const guardar = useMutation({
-    mutationFn: () => actualizarClave(clienteId, controlToken, clave.id, form),
+    mutationFn: () => actualizarClave(clienteId, clave.id, form),
     onSuccess: () => { setEditando(false); onChange(); },
   });
   const borrar = useMutation({
-    mutationFn: () => eliminarClave(clienteId, controlToken, clave.id),
+    mutationFn: () => eliminarClave(clienteId, clave.id),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['claves', clienteId] }); },
   });
 
@@ -190,17 +171,15 @@ function ClaveRow({
 function FilaNueva({
   seccion,
   clienteId,
-  controlToken,
   onDone,
 }: {
   seccion: SeccionClave;
   clienteId: string;
-  controlToken: string;
   onDone: () => void;
 }) {
   const [form, setForm] = useState<ClaveInput>({ seccion, etiqueta: '', usuario: '', secreto: '', url: '' });
   const crear = useMutation({
-    mutationFn: () => crearClave(clienteId, controlToken, { ...form, seccion }),
+    mutationFn: () => crearClave(clienteId, { ...form, seccion }),
     onSuccess: onDone,
   });
 

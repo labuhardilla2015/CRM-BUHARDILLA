@@ -51,6 +51,11 @@ enum SeccionClave {
   SERVIDOR
 }
 
+enum TipoEnlace {
+  ENLACE
+  RED_SOCIAL
+}
+
 enum EstadoPotencial {
   NUEVO
   CONTACTADO
@@ -88,6 +93,7 @@ model Usuario {
   enPracticas    Boolean  @default(false) @map("en_practicas")
   contratoRuta   String?  @map("contrato_ruta") @db.VarChar(255)
   contratoNombre String?  @map("contrato_nombre") @db.VarChar(255)
+  fotoRuta       String?  @map("foto_ruta") @db.VarChar(255)
 
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
@@ -101,8 +107,25 @@ model Usuario {
   asignaciones     AsignacionTarjeta[]
   potencialesCreados Potencial[]
   notificaciones   Notificacion[]
+  documentos       DocumentoEmpleado[]
 
   @@map("usuarios")
+}
+
+/// Documento del expediente del empleado (contratos, DNI, etc.).
+model DocumentoEmpleado {
+  id        String   @id @default(uuid())
+  usuarioId String   @map("usuario_id")
+  nombre    String   @db.VarChar(255)
+  ruta      String   @db.VarChar(255)
+  mime      String   @db.VarChar(120)
+  tamano    Int
+  createdAt DateTime @default(now()) @map("created_at")
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@index([usuarioId])
+  @@map("documentos_empleado")
 }
 
 /// Notificación dirigida a un usuario (p. ej. asignación de tarjeta con su
@@ -141,8 +164,41 @@ model Cliente {
   claves          ClaveCliente[]
   potencialesConvertidos Potencial[]
   presupuestos    Presupuesto[]
+  documentos      DocumentoCliente[]
+  enlaces         EnlaceCliente[]
 
   @@map("clientes")
+}
+
+/// Documento adjunto a la ficha del cliente (cualquier empleado).
+model DocumentoCliente {
+  id        String   @id @default(uuid())
+  clienteId String   @map("cliente_id")
+  nombre    String   @db.VarChar(255)
+  ruta      String   @db.VarChar(255)
+  mime      String   @db.VarChar(120)
+  tamano    Int
+  createdAt DateTime @default(now()) @map("created_at")
+
+  cliente Cliente @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+
+  @@index([clienteId])
+  @@map("documentos_cliente")
+}
+
+/// Enlace de interés o red social del cliente.
+model EnlaceCliente {
+  id        String     @id @default(uuid())
+  clienteId String     @map("cliente_id")
+  tipo      TipoEnlace @default(ENLACE)
+  etiqueta  String     @db.VarChar(120)
+  url       String     @db.VarChar(500)
+  createdAt DateTime   @default(now()) @map("created_at")
+
+  cliente Cliente @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+
+  @@index([clienteId])
+  @@map("enlaces_cliente")
 }
 
 /// Cliente potencial (lead) en el embudo de ventas. Solo lo gestionan admins.

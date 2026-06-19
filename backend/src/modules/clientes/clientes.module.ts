@@ -6,11 +6,14 @@ import { ControlService } from './control.service';
 import { ControlGuard } from './control.guard';
 import { ClavesService } from './claves.service';
 import { ClavesController } from './claves.controller';
+import { ClienteExtrasService } from './cliente-extras.service';
+import { ClienteExtrasController } from './cliente-extras.controller';
+import { StorageModule } from '../../common/storage/storage.module';
 
 @Module({
-  imports: [JwtModule.register({})],
-  controllers: [ClientesController, ClavesController],
-  providers: [ClientesService, ControlService, ControlGuard, ClavesService],
+  imports: [JwtModule.register({}), StorageModule],
+  controllers: [ClientesController, ClavesController, ClienteExtrasController],
+  providers: [ClientesService, ControlService, ControlGuard, ClavesService, ClienteExtrasService],
   exports: [ClientesService],
 })
 export class ClientesModule {}

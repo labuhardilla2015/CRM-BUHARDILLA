@@ -86,28 +86,84 @@ export interface ClaveInput {
   notas?: string;
 }
 
-const ctrl = (controlToken: string) => ({ headers: { 'X-Control-Token': controlToken } });
-
-export async function getClaves(id: string, controlToken: string): Promise<Clave[]> {
-  const { data } = await api.get<Clave[]>(`/clientes/${id}/claves`, ctrl(controlToken));
+// Las claves son accesibles a cualquier empleado autenticado (uso diario).
+export async function getClaves(id: string): Promise<Clave[]> {
+  const { data } = await api.get<Clave[]>(`/clientes/${id}/claves`);
   return data;
 }
 
-export async function crearClave(id: string, controlToken: string, body: ClaveInput): Promise<Clave> {
-  const { data } = await api.post<Clave>(`/clientes/${id}/claves`, body, ctrl(controlToken));
+export async function crearClave(id: string, body: ClaveInput): Promise<Clave> {
+  const { data } = await api.post<Clave>(`/clientes/${id}/claves`, body);
   return data;
 }
 
-export async function actualizarClave(
+export async function actualizarClave(id: string, claveId: string, body: ClaveInput): Promise<Clave> {
+  const { data } = await api.patch<Clave>(`/clientes/${id}/claves/${claveId}`, body);
+  return data;
+}
+
+export async function eliminarClave(id: string, claveId: string): Promise<void> {
+  await api.delete(`/clientes/${id}/claves/${claveId}`);
+}
+
+// ─── Documentos del cliente ──────────────────────────────────────────
+export interface DocumentoCliente {
+  id: string;
+  nombre: string;
+  mime: string;
+  tamano: number;
+  createdAt: string;
+}
+
+export async function getDocumentosCliente(id: string): Promise<DocumentoCliente[]> {
+  const { data } = await api.get<DocumentoCliente[]>(`/clientes/${id}/documentos`);
+  return data;
+}
+
+export async function subirDocumentoCliente(id: string, file: File): Promise<DocumentoCliente> {
+  const form = new FormData();
+  form.append('file', file);
+  const { data } = await api.post<DocumentoCliente>(`/clientes/${id}/documentos`, form);
+  return data;
+}
+
+export async function eliminarDocumentoCliente(docId: string): Promise<void> {
+  await api.delete(`/documentos-cliente/${docId}`);
+}
+
+export async function descargarDocumentoCliente(docId: string, nombre: string): Promise<void> {
+  const res = await api.get(`/documentos-cliente/${docId}/download`, { responseType: 'blob' });
+  const url = URL.createObjectURL(res.data as Blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = nombre;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ─── Enlaces / redes sociales ────────────────────────────────────────
+export type TipoEnlace = 'ENLACE' | 'RED_SOCIAL';
+
+export interface EnlaceCliente {
+  id: string;
+  tipo: TipoEnlace;
+  etiqueta: string;
+  url: string;
+}
+
+export async function getEnlaces(id: string): Promise<EnlaceCliente[]> {
+  const { data } = await api.get<EnlaceCliente[]>(`/clientes/${id}/enlaces`);
+  return data;
+}
+
+export async function crearEnlace(
   id: string,
-  controlToken: string,
-  claveId: string,
-  body: ClaveInput,
-): Promise<Clave> {
-  const { data } = await api.patch<Clave>(`/clientes/${id}/claves/${claveId}`, body, ctrl(controlToken));
+  body: { tipo: TipoEnlace; etiqueta: string; url: string },
+): Promise<EnlaceCliente> {
+  const { data } = await api.post<EnlaceCliente>(`/clientes/${id}/enlaces`, body);
   return data;
 }
 
-export async function eliminarClave(id: string, controlToken: string, claveId: string): Promise<void> {
-  await api.delete(`/clientes/${id}/claves/${claveId}`, ctrl(controlToken));
+export async function eliminarEnlace(enlaceId: string): Promise<void> {
+  await api.delete(`/enlaces-cliente/${enlaceId}`);
 }

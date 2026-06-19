@@ -8,7 +8,6 @@ import {
 } from '@/lib/clientes-api';
 import { errorMessage } from '@/lib/auth-api';
 import { Button, Input } from '@/components/ui';
-import { ClavesSheet } from './ClavesSheet';
 
 /**
  * Apartado "Control" del cliente (solo admins). Pide la contraseña de Control,
@@ -30,11 +29,11 @@ export function ControlPanel({ clienteId }: { clienteId: string }) {
     return (
       <section className="rounded-xl border border-slate-200 bg-white p-5">
         <h3 className="mb-1 flex items-center gap-2 text-sm font-semibold text-slate-800">
-          <Lock className="h-4 w-4 text-brand" /> Control · datos sensibles y claves
+          <Lock className="h-4 w-4 text-brand" /> Control · datos sensibles
         </h3>
         <p className="mb-4 text-sm text-slate-500">
-          Zona protegida (solo admins). Introduce la contraseña de Control para ver los datos
-          sensibles y la <strong>hoja de claves y servidores</strong> del cliente.
+          Zona protegida (solo admins). Introduce la contraseña de Control para ver los
+          datos sensibles del cliente.
         </p>
         <form
           onSubmit={(e) => { e.preventDefault(); if (password) unlock.mutate(); }}
@@ -99,9 +98,6 @@ function DatosSensibles({ clienteId, controlToken }: { clienteId: string; contro
         </Button>
         {guardadoOk && <span className="text-sm text-emerald-600">Guardado ✓</span>}
       </div>
-
-      {/* Hoja de claves (claves y servidores) */}
-      <ClavesSheet clienteId={clienteId} controlToken={controlToken} />
     </section>
   );
 }
