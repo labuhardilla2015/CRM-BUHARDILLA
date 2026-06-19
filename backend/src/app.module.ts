@@ -8,6 +8,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
 import { ClockModule } from './modules/clock/clock.module';
 import { ClientesModule } from './modules/clientes/clientes.module';
+import { TablerosModule } from './modules/tableros/tableros.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
 import { AppController } from './app.controller';
@@ -24,6 +25,7 @@ import { AppController } from './app.controller';
     AuthModule,
     ClockModule,
     ClientesModule,
+    TablerosModule,
   ],
   controllers: [AppController],
   providers: [

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Plus, Building2, Pencil, Save, X, LayoutGrid } from 'lucide-react';
+import { Plus, Building2, Pencil, Save, X } from 'lucide-react';
 import {
   actualizarCliente,
   crearCliente,
@@ -12,6 +12,7 @@ import { errorMessage } from '@/lib/auth-api';
 import { useAuth } from '@/store/auth';
 import { PageHeader } from '@/components/PageHeader';
 import { ControlPanel } from '@/components/clientes/ControlPanel';
+import { BoardPanel } from '@/components/clientes/BoardPanel';
 import { Button, Input, Select } from '@/components/ui';
 
 export function Clientes() {
@@ -114,14 +115,8 @@ function FichaCliente({ clienteId, esAdmin }: { clienteId: string; esAdmin: bool
         {esAdmin && <ControlPanel clienteId={clienteId} />}
       </div>
 
-      {/* Tableros (Fase 3.2) */}
-      <section className="rounded-xl border border-dashed border-slate-300 bg-white p-8 text-center">
-        <LayoutGrid className="mx-auto mb-2 h-7 w-7 text-slate-300" />
-        <p className="text-sm font-medium text-slate-600">Tableros del cliente</p>
-        <span className="mt-2 inline-block rounded-full bg-brand/10 px-3 py-1 text-xs font-medium text-brand">
-          Próximamente · Fase 3.2
-        </span>
-      </section>
+      {/* Tableros tipo Trello */}
+      <BoardPanel clienteId={clienteId} />
     </div>
   );
 }

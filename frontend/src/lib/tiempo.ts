@@ -71,3 +71,21 @@ export function toLocalInput(iso: string): string {
 export function fromLocalInput(value: string): string {
   return new Date(value).toISOString();
 }
+
+/** ISO → "YYYY-MM-DD" (local) para <input type="date">. */
+export function toDateInput(iso: string | null | undefined): string {
+  if (!iso) return '';
+  const d = new Date(iso);
+  const off = d.getTimezoneOffset();
+  return new Date(d.getTime() - off * 60000).toISOString().slice(0, 10);
+}
+
+/** "YYYY-MM-DD" → ISO (medianoche local). */
+export function fromDateInput(value: string): string {
+  return new Date(value + 'T00:00:00').toISOString();
+}
+
+/** ISO → "dd/mm" corto para mostrar fechas de tarjeta. */
+export function formatDiaMes(iso: string): string {
+  return new Date(iso).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' });
+}

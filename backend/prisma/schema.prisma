@@ -29,6 +29,23 @@ enum AccionTiempo {
   EMAIL_MARKETING
 }
 
+enum TipoTablero {
+  INFORMACION
+  ADS
+  SEO
+  WEB
+  DISENO
+  REDES
+  ESTRATEGICO
+  AUDIOVISUAL
+}
+
+enum EstadoTarjeta {
+  PENDIENTE
+  EN_CURSO
+  HECHO
+}
+
 /// Usuarios del CRM. El rol se asigna en el registro según la tabla RoleEmail.
 model Usuario {
   id           String   @id @default(uuid())
@@ -61,8 +78,43 @@ model Cliente {
   createdAt DateTime @default(now()) @map("created_at")
 
   registrosTiempo RegistroTiempo[]
+  tableros        Tablero[]
 
   @@map("clientes")
+}
+
+/// Tablero tipo Trello de un cliente. Un tablero por tipo y cliente.
+model Tablero {
+  id        String      @id @default(uuid())
+  clienteId String      @map("cliente_id")
+  tipo      TipoTablero
+  createdAt DateTime    @default(now()) @map("created_at")
+
+  cliente  Cliente   @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+  tarjetas Tarjeta[]
+
+  @@unique([clienteId, tipo])
+  @@map("tableros")
+}
+
+/// Tarjeta de un tablero. Estado (columna), fechas, progreso 0-100.
+model Tarjeta {
+  id          String        @id @default(uuid())
+  tableroId   String        @map("tablero_id")
+  titulo      String        @db.VarChar(200)
+  descripcion String?       @db.Text
+  estado      EstadoTarjeta @default(PENDIENTE)
+  fechaInicio DateTime?     @map("fecha_inicio")
+  fechaFin    DateTime?     @map("fecha_fin")
+  progreso    Int           @default(0)
+  orden       Int           @default(0)
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+
+  tablero Tablero @relation(fields: [tableroId], references: [id], onDelete: Cascade)
+
+  @@index([tableroId, estado])
+  @@map("tarjetas")
 }
 
 /// Registro de tiempo (estilo Toggl): tiempo dedicado por un usuario a un
