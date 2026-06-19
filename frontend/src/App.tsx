@@ -8,6 +8,7 @@ import { Login } from '@/pages/Login';
 import { Register } from '@/pages/Register';
 import { Inicio } from '@/pages/Inicio';
 import { Clientes } from '@/pages/Clientes';
+import { ClavesPage } from '@/pages/ClavesPage';
 import { Fichaje } from '@/pages/reloj/Fichaje';
 import { Cronometro } from '@/pages/reloj/Cronometro';
 import { Informes } from '@/pages/reloj/Informes';
@@ -47,6 +48,7 @@ export default function App() {
 
             {/* Clientes (Fase 3) */}
             <Route path="/clientes" element={<Clientes />} />
+            <Route path="/clientes/:id/claves" element={<ClavesPage />} />
 
             {/* Potenciales (Fase 4, solo admin) */}
             <Route element={<ProtectedRoute roles={['ADMIN']} />}>

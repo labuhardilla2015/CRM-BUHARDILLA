@@ -14,8 +14,8 @@ import { PageHeader } from '@/components/PageHeader';
 import { ControlPanel } from '@/components/clientes/ControlPanel';
 import { BoardPanel } from '@/components/clientes/BoardPanel';
 import { GlobalTasks } from '@/components/clientes/GlobalTasks';
-import { ClavesModal } from '@/components/clientes/ClavesModal';
 import { EnlacesCliente, DocumentosCliente } from '@/components/clientes/ClienteRecursos';
+import { Link } from 'react-router-dom';
 import { Button, Input, Select } from '@/components/ui';
 
 export function Clientes() {
@@ -94,7 +94,6 @@ export function Clientes() {
 }
 
 function FichaCliente({ clienteId, esAdmin }: { clienteId: string; esAdmin: boolean }) {
-  const [verClaves, setVerClaves] = useState(false);
   const cliente = useQuery({ queryKey: ['cliente', clienteId], queryFn: () => getCliente(clienteId) });
 
   if (cliente.isLoading || !cliente.data) {
@@ -114,12 +113,12 @@ function FichaCliente({ clienteId, esAdmin }: { clienteId: string; esAdmin: bool
             {cliente.data.contacto && <p className="text-sm text-slate-300">{cliente.data.contacto}</p>}
           </div>
         </div>
-        <button
-          onClick={() => setVerClaves(true)}
+        <Link
+          to={`/clientes/${clienteId}/claves`}
           className="flex items-center gap-2 rounded-lg bg-brand px-4 py-2 text-sm font-medium text-white transition hover:bg-brand-dark"
         >
           <KeyRound className="h-4 w-4" /> Claves de acceso
-        </button>
+        </Link>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
@@ -138,8 +137,6 @@ function FichaCliente({ clienteId, esAdmin }: { clienteId: string; esAdmin: bool
 
       {/* Tableros tipo Trello */}
       <BoardPanel clienteId={clienteId} />
-
-      {verClaves && <ClavesModal clienteId={clienteId} onClose={() => setVerClaves(false)} />}
     </div>
   );
 }
