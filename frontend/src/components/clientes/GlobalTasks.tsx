@@ -37,6 +37,8 @@ export function GlobalTasks({ clienteId }: { clienteId: string }) {
     queryKey: ['tareas-activas', clienteId, asignadoId ?? 'todas'],
     queryFn: () => getTareasActivas(clienteId, asignadoId),
   });
+  // Solo las que están realmente "En curso" (no pendientes ni hechas)
+  const enCurso = (tareas.data ?? []).filter((t) => t.estado === 'EN_CURSO');
 
   return (
     <section className="rounded-xl border border-slate-200 bg-white p-5">
@@ -44,7 +46,7 @@ export function GlobalTasks({ clienteId }: { clienteId: string }) {
         <h3 className="flex items-center gap-2 text-sm font-semibold text-slate-800">
           <ListChecks className="h-4 w-4 text-brand" /> Tareas en curso
           <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-normal text-slate-500">
-            {tareas.data?.length ?? 0}
+            {enCurso.length}
           </span>
         </h3>
 
@@ -71,9 +73,9 @@ export function GlobalTasks({ clienteId }: { clienteId: string }) {
         )}
       </div>
 
-      {tareas.data?.length ? (
+      {enCurso.length ? (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {tareas.data.map((t) => (
+          {enCurso.map((t) => (
             <button
               key={t.id}
               onClick={() => setAbierta(t)}

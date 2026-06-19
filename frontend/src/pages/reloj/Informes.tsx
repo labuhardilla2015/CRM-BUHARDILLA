@@ -14,6 +14,7 @@ import { formatHoras, inicioHoy, inicioSemana, sumarDias } from '@/lib/tiempo';
 import { useAuth } from '@/store/auth';
 import { PageHeader } from '@/components/PageHeader';
 import { Select } from '@/components/ui';
+import { LimitesCard } from '@/components/clientes/LimitesCard';
 
 type Preset = 'hoy' | 'semana' | 'mes' | 'todo';
 
@@ -157,6 +158,13 @@ export function Informes() {
           <Bloque titulo="Por persona" icon={Users2} items={resumen.data?.porUsuario ?? []} total={total} />
         )}
       </div>
+
+      {/* Límites de horas mensuales del cliente seleccionado (solo admin) */}
+      {esAdmin && clienteId && (
+        <div className="mt-6">
+          <LimitesCard clienteId={clienteId} />
+        </div>
+      )}
     </div>
   );
 }

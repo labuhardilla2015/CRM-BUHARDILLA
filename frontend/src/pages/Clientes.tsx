@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Plus, Pencil, Save, X, KeyRound, Search, ArrowLeft, ImagePlus } from 'lucide-react';
+import { Plus, Pencil, Save, X, KeyRound, Search, ArrowLeft, ImagePlus, Info, Lock } from 'lucide-react';
 import {
   actualizarCliente,
   crearCliente,
@@ -17,8 +17,8 @@ import { ControlPanel } from '@/components/clientes/ControlPanel';
 import { BoardPanel } from '@/components/clientes/BoardPanel';
 import { GlobalTasks } from '@/components/clientes/GlobalTasks';
 import { EnlacesCliente, DocumentosCliente } from '@/components/clientes/ClienteRecursos';
-import { LimitesCard } from '@/components/clientes/LimitesCard';
 import { ClienteLogo } from '@/components/clientes/ClienteLogo';
+import { Modal } from '@/components/Modal';
 import { Link } from 'react-router-dom';
 import { Button, Input, Select } from '@/components/ui';
 
@@ -131,15 +131,19 @@ export function Clientes() {
 }
 
 function FichaCliente({ clienteId, esAdmin }: { clienteId: string; esAdmin: boolean }) {
+  const [verInfo, setVerInfo] = useState(false);
+  const [verControl, setVerControl] = useState(false);
   const cliente = useQuery({ queryKey: ['cliente', clienteId], queryFn: () => getCliente(clienteId) });
 
   if (cliente.isLoading || !cliente.data) {
     return <p className="text-sm text-slate-400">Cargando ficha…</p>;
   }
 
+  const btn = 'flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-white transition';
+
   return (
     <div className="space-y-6">
-      {/* Cabecera de la ficha + acceso rápido a claves */}
+      {/* Cabecera de la ficha + botones (Info / Control / Claves) */}
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-sidebar px-5 py-4 text-white">
         <div className="flex items-center gap-3">
           <ClienteLogo id={clienteId} nombre={cliente.data.nombre} logoRuta={cliente.data.logoRuta} className="h-12 w-12 bg-white" />
@@ -148,34 +152,43 @@ function FichaCliente({ clienteId, esAdmin }: { clienteId: string; esAdmin: bool
             {cliente.data.contacto && <p className="text-sm text-slate-300">{cliente.data.contacto}</p>}
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {esAdmin && <LogoUploader clienteId={clienteId} />}
-          <Link
-            to={`/clientes/${clienteId}/claves`}
-            className="flex items-center gap-2 rounded-lg bg-brand px-4 py-2 text-sm font-medium text-white transition hover:bg-brand-dark"
-          >
+          <button onClick={() => setVerInfo(true)} className={`${btn} bg-white/15 hover:bg-white/25`}>
+            <Info className="h-4 w-4" /> Info general
+          </button>
+          {esAdmin && (
+            <button onClick={() => setVerControl(true)} className={`${btn} bg-white/15 hover:bg-white/25`}>
+              <Lock className="h-4 w-4" /> Control
+            </button>
+          )}
+          <Link to={`/clientes/${clienteId}/claves`} className={`${btn} bg-brand hover:bg-brand-dark`}>
             <KeyRound className="h-4 w-4" /> Claves de acceso
           </Link>
         </div>
-      </div>
-
-      <div className="grid gap-6 lg:grid-cols-2">
-        <InfoCliente cliente={cliente.data} esAdmin={esAdmin} />
       </div>
 
       {/* Enlaces de interés, redes sociales y documentos */}
       <EnlacesCliente clienteId={clienteId} />
       <DocumentosCliente clienteId={clienteId} />
 
-      {/* Control y límites de horas (solo admin) */}
-      {esAdmin && <LimitesCard clienteId={clienteId} />}
-      {esAdmin && <ControlPanel clienteId={clienteId} />}
-
       {/* Vista global de tareas en curso */}
       <GlobalTasks clienteId={clienteId} />
 
       {/* Tableros tipo Trello */}
       <BoardPanel clienteId={clienteId} />
+
+      {/* Modales */}
+      {verInfo && (
+        <Modal title="Información general" onClose={() => setVerInfo(false)}>
+          <InfoCliente cliente={cliente.data} esAdmin={esAdmin} />
+        </Modal>
+      )}
+      {esAdmin && verControl && (
+        <Modal title="Control" maxW="max-w-2xl" onClose={() => setVerControl(false)}>
+          <ControlPanel clienteId={clienteId} />
+        </Modal>
+      )}
     </div>
   );
 }
@@ -195,12 +208,11 @@ function InfoCliente({ cliente, esAdmin }: { cliente: Cliente; esAdmin: boolean 
   });
 
   return (
-    <section className="rounded-xl border border-slate-200 bg-white p-5">
-      <div className="mb-3 flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-slate-800">Información</h3>
+    <section>
+      <div className="mb-3 flex items-center justify-end">
         {esAdmin && !editando && (
-          <button onClick={() => setEditando(true)} className="text-slate-400 hover:text-brand" title="Editar">
-            <Pencil className="h-4 w-4" />
+          <button onClick={() => setEditando(true)} className="flex items-center gap-1 text-sm text-brand hover:underline" title="Editar">
+            <Pencil className="h-4 w-4" /> Editar
           </button>
         )}
       </div>
