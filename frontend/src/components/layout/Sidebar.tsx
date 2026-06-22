@@ -21,12 +21,9 @@ export function Sidebar({ onClose }: { onClose?: () => void }) {
     <div className="flex h-full w-64 flex-col bg-sidebar text-slate-300">
       {/* Marca / logo */}
       <div className="flex items-center justify-between px-5 py-5">
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col items-start gap-1">
           <img src="/logo.png" alt="La Buhardilla" className="h-9 w-auto" />
-          <div className="leading-tight">
-            <p className="text-sm font-semibold text-white">La Buhardilla</p>
-            <p className="text-xs text-slate-500">CRM interno</p>
-          </div>
+          <p className="text-xs text-slate-500">CRM Interno</p>
         </div>
         {onClose && (
           <button onClick={onClose} className="text-slate-400 hover:text-white lg:hidden">
